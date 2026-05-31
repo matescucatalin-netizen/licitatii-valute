@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VALUTARE.LIVE - Licitații Valutare România</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Oswald', sans-serif; }
+  body { background: #f4f6f9; color: #222; padding-bottom: 50px; }
+  
+  /* Navbar */
+  .navbar { background: #ffffff; padding: 2vh 5vw; border-bottom: 4px solid #dee2e6; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 4.5vh; letter-spacing: 1px; line-height: 1; }
+  .logo .green { color: #1a7a3a; }
+  .logo .gold { color: #a37a00; }
+  .tagline { font-size: 1.4vh; color: #777; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; }
+
+  .container { max-width: 1200px; margin: 4vh auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px; }
+  @media(max-width: 900px) { .container { grid-template-columns: 1fr; } }
+
+  /* Card Formular */
+  .card-form { background: #ffffff; border: 2px solid #dee2e6; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); }
+  .card-title { font-family: 'Bebas Neue', sans-serif; font-size: 3.5vh; color: #a37a00; letter-spacing: 1px; margin-bottom: 20px; border-bottom: 2px solid #f4f6f9; padding-bottom: 10px; }
+  
+  .form-group { margin-bottom: 20px; }
+  .form-group label { display: block; font-size: 1.6vh; font-weight: 700; text-transform: uppercase; color: #555; margin-bottom: 8px; letter-spacing: 0.5px; }
+  .form-control { width: 100%; padding: 12px 15px; border: 2px solid #ced4da; border-radius: 10px; font-size: 2vh; font-weight: bold; background: #fff; outline: none; transition: 0.2s; }
+  .form-control:focus { border-color: #a37a00; }
+  
+  .radio-group { display: flex; gap: 15px; }
+  .radio-btn { flex: 1; text-align: center; padding: 12px; border: 2px solid #ced4da; border-radius: 10px; cursor: pointer; font-weight: bold; user-select: none; }
+  .radio-btn.active.buy { background: #eafaf1; border-color: #24b663; color: #1a7a3a; }
+  .radio-btn.active.sell { background: #fdf2f2; border-color: #fe4a49; color: #b3261e; }
+
+  .btn-submit { width: 100%; padding: 15px; background: #1a7a3a; color: white; border: none; border-radius: 12px; font-family: 'Bebas Neue', sans-serif; font-size: 3vh; letter-spacing: 1px; cursor: pointer; transition: 0.2s; }
+  .btn-submit:hover { background: #135c2b; transform: translateY(-2px); }
+
+  /* Oferte */
+  .card-offers { background: #ffffff; border: 2px solid #dee2e6; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); display: flex; flex-direction: column; }
+  .live-indicator { display: inline-flex; align-items: center; gap: 8px; background: #fdf2f2; color: #b3261e; padding: 4px 12px; border-radius: 20px; font-size: 1.3vh; font-weight: bold; float: right; margin-top: 5px; text-transform: uppercase; }
+  .live-dot { width: 8px; height: 8px; background: #b3261e; border-radius: 50%; animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .no-offers { text-align: center; padding: 50px 20px; color: #999; font-size: 2.2vh; }
+  
+  .offer-row { display: grid; grid-template-columns: 2fr 1.2fr 1fr; align-items: center; background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 15px; padding: 15px 20px; margin-bottom: 12px; }
+  .exchange-name { font-size: 2.4vh; font-weight: 700; color: #111; }
+  .exchange-loc { font-size: 1.4vh; color: #777; font-weight: bold; }
+  .offer-rate { font-family: 'Bebas Neue', sans-serif; font-size: 4.5vh; color: #a37a00; text-align: center; }
+  
+  .btn-accept { padding: 10px; background: #a37a00; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+  .btn-accept:hover { background: #826100; }
+
+  .success-box { display: none; background: #eafaf1; border: 2px solid #24b663; border-radius: 15px; padding: 20px; text-align: center; color: #1a7a3a; margin-top: 20px; font-size: 2.2vh; }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div>
+    <div class="logo"><span class="green">VALUTARE</span><span class="gold">.LIVE</span></div>
+    <div class="tagline">Licitații Valutare România</div>
+  </div>
+  <div style="font-weight: bold; color: #1a7a3a;" id="statusConexiune">🟢 Conectat la Rețeaua Națională</div>
+</nav>
+
+<div class="container">
+  <!-- Formular -->
+  <div class="card-form">
+    <div class="card-title">💵 Lansează o licitație nouă</div>
+    
+    <div class="form-group">
+      <label>Orașul tău</label>
+      <select class="form-control" id="oraseSelect">
+        <option value="Ramnicu Valcea">Râmnicu Vâlcea</option>
+        <option value="Bucuresti">București</option>
+        <option value="Cluj-Napoca">Cluj-Napoca</option>
+        <option value="Timisoara">Timișoara</option>
+        <option value="Craiova">Craiova</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label>Operațiune</label>
+      <div class="radio-group">
+        <div class="radio-btn active buy" id="optBuy">VREAU SĂ CUMPĂR</div>
+        <div class="radio-btn sell" id="optSell">VREAU SĂ VÂND</div>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label>Valuta dorită</label>
+      <select class="form-control" id="valutaSelect">
+        <option value="EUR">EURO (EUR)</option>
+        <option value="USD">DOLAR AMERICAN (USD)</option>
+        <option value="GBP">LIRĂ STERLINĂ (GBP)</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label>Suma totală (Min. 2.000)</label>
+      <input type="number" class="form-control" id="sumaInput" value="5000">
+    </div>
+    
+    <button class="btn-submit" id="btnLanseaza">🚀 PORNEȘTE LICITAȚIA</button>
+  </div>
+
+  <!-- Oferte Live -->
+  <div class="card-offers">
+    <div>
+      <div class="live-indicator" id="liveIndicator" style="display:none;"><div class="live-dot"></div> live</div>
+      <div class="card-title" style="color:#111;">⚖️ Oferte de la Casele de Schimb</div>
+    </div>
+    
+    <div class="no-offers" id="noOffersText">
+      Alegeți opțiunile și porniți licitația pentru a primi oferte în timp real din orașul dumneavoastră.
+    </div>
+    
+    <div id="offersContainer"></div>
+    <div class="success-box" id="successBox"></div>
+  </div>
+</div>
+
+<!-- INTEGRARE FIREBASE CONFIGURATĂ DUPĂ CHEILE TALE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+  import { getDatabase, ref, set, onValue, push } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCN9eB_0D2VZbCSrTnBk-mDTVPIjSCr3hA",
+    authDomain: "licitatii-schimb.firebaseapp.com",
+    databaseURL: "https://licitatii-schimb-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "licitatii-schimb",
+    storageBucket: "licitatii-schimb.firebasestorage.app",
+    messagingSenderId: "206650424464",
+    appId: "1:206650424464:web:c214f70fc3e2d4acacac15"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  let operatiune = 'CUMPĂR';
+  let licitatieCurentaId = null;
+
+  // Selectare Tip Operațiune
+  document.getElementById('optBuy').addEventListener('click', () => { operatiune = 'CUMPĂR'; updateRadioUI(); });
+  document.getElementById('optSell').addEventListener('click', () => { operatiune = 'VÂND'; updateRadioUI(); });
+
+  function updateRadioUI() {
+    document.getElementById('optBuy').classList.toggle('active', operatiune === 'CUMPĂR');
+    document.getElementById('optSell').classList.toggle('active', operatiune === 'VÂND');
+  }
+
+  // Pornire Licitație în Firebase
+  document.getElementById('btnLanseaza').addEventListener('click', () => {
+    const oras = document.getElementById('oraseSelect').value;
+    const valuta = document.getElementById('valutaSelect').value;
+    const suma = parseInt(document.getElementById('sumaInput').value);
+
+    if (suma < 2000) { alert("Suma minimă este de 2000 unități."); return; }
+
+    document.getElementById('noOffersText').style.display = 'none';
+    document.getElementById('liveIndicator').style.display = 'inline-flex';
+    document.getElementById('offersContainer').innerHTML = '';
+    document.getElementById('successBox').style.display = 'none';
+
+    // Generăm o licitație nouă în baza de date
+    const listaLicitatiiRef = ref(db, 'licitatii/' + oras);
+    const nouaLicitatieRef = push(listaLicitatiiRef);
+    licitatieCurentaId = nouaLicitatieRef.key;
+
+    set(nouaLicitatieRef, {
+      id: licitatieCurentaId,
+      valuta: valuta,
+      suma: suma,
+      tip: operatiune,
+      status: 'ACTIVA',
+      timestamp: Date.now()
+    }).then(() => {
+      ascultaOferte(oras, licitatieCurentaId);
+    });
+  });
+
+  // Ascultăm în timp real ofertele care vin de la Casele de Schimb pentru această licitație
+  function ascultaOferte(oras, licitatieId) {
+    const oferteRef = ref(db, `oferte/${oras}/${licitatieId}`);
+    
+    onValue(oferteRef, (snapshot) => {
+      const container = document.getElementById('offersContainer');
+      container.innerHTML = '';
+      
+      if (snapshot.exists()) {
+        const date = snapshot.val();
+        Object.keys(date).forEach(key => {
+          const of = date[key];
+          const row = document.createElement('div');
+          row.className = 'offer-row';
+          row.innerHTML = `
+            <div class="exchange-info">
+              <div class="exchange-name">${of.numeCasa}</div>
+              <div class="exchange-loc">${of.adresaCasa}</div>
+            </div>
+            <div class="offer-rate">${parseFloat(of.curs).toFixed(4)}</div>
+            <button class="btn-accept" id="btn-${key}">Acceptă</button>
+          `;
+          container.insertBefore(row, container.firstChild);
+          
+          // Logica pentru butonul de Acceptă
+          document.getElementById(`btn-${key}`).addEventListener('click', () => {
+            marcheazaLicitatieCastigata(oras, licitatieId, of.numeCasa, of.curs);
+          });
+        });
+      }
+    });
+  }
+
+  function marcheazaLicitatieCastigata(oras, licitatieId, numeCasa, curs) {
+    // Închidem licitația în baza de date
+    set(ref(db, `licitatii/${oras}/${licitatieId}/status`), 'FINALIZATA');
+    
+    document.getElementById('liveIndicator').style.display = 'none';
+    document.getElementById('offersContainer').innerHTML = '';
+    
+    const codUnic = "EX-" + Math.floor(100000 + Math.random() * 900000);
+    const sBox = document.getElementById('successBox');
+    sBox.style.display = 'block';
+    sBox.innerHTML = `
+      <h3 style="font-family:'Bebas Neue',sans-serif; font-size:3.5vh; margin-bottom:10px;">🎉 Licitație Acceptată!</h3>
+      <p>Ați blocat cursul de <strong>${parseFloat(curs).toFixed(4)} RON</strong> la <strong>${numeCasa}</strong>.</p>
+      <div style="background:#fff; border:2px dashed #24b663; padding:10px; margin:15px 0; font-size:3vh; font-weight:bold; letter-spacing:2px;">COD: ${codUnic}</div>
+      <p style="font-size:1.4vh; color:#555;">Prezentați codul în agenție în maximum 2 ore.</p>
+    `;
+  }
+</script>
+</body>
+</html>
