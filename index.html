@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Comandă Totală Mobilă</title>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Oswald', sans-serif; }
+    body { background: #f1f5f9; color: #0f172a; padding: 10px; font-size: 14px; }
+    .header { padding-bottom: 10px; border-bottom: 2px solid #cbd5e1; margin-bottom: 12px; }
+    .title { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: #0284c7; text-align: center; }
+    .status-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; }
+    .clock { font-size: 13px; color: #64748b; font-weight: bold; }
+    .alert-zone { font-size: 11px; color: #15803d; background: #dcfce7; padding: 2px 6px; border-radius: 4px; font-weight: bold; border: 1px solid #bbf7d0; }
+    .fast-nav { display: flex; gap: 4px; margin-bottom: 15px; }
+    .nav-btn { flex: 1; background: #e2e8f0; border: 1px solid #cbd5e1; color: #475569; text-align: center; padding: 8px 2px; border-radius: 6px; font-size: 10px; font-weight: bold; text-transform: uppercase; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+    .nav-btn.active { background: #0284c7; border-color: #0284c7; color: #fff; }
+    .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: #b45309; margin-bottom: 10px; border-left: 4px solid #b45309; padding-left: 8px; }
+    .section-container { display: none; background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 15px; }
+
+    /* PLANNER */
+    .planner-grid { display: flex; gap: 10px; margin-bottom: 12px; }
+    .planner-col { flex: 1; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px; }
+    .col-header { font-family: 'Bebas Neue', sans-serif; font-size: 22px; text-align: center; margin-bottom: 10px; padding: 4px; border-radius: 4px; }
+    .col-sermirav { background: #2563eb; color: #fff; }
+    .col-seba { background: #7c3aed; color: #fff; }
+    .currency-block { background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; margin-bottom: 10px; }
+    .currency-title { font-size: 13px; font-weight: bold; text-align: center; padding: 2px 0; margin-bottom: 6px; border-bottom: 1px dashed #cbd5e1; }
+    .title-ron { color: #b45309; } .title-usd { color: #0284c7; } .title-eur { color: #16a34a; }
+    .input-label { font-size: 10px; color: #475569; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; display: block; }
+    .prog-input { width: 100%; background: #fff5f5; border: 1px solid #dc2626; color: #b91c1c; padding: 6px; border-radius: 4px; font-size: 14px; text-align: center; font-weight: bold; margin-bottom: 8px; }
+    .withdrawal-inputs { display: flex; flex-direction: column; gap: 5px; }
+    .withdraw-input { width: 100%; background: #fff; border: 1px solid #94a3b8; color: #0f172a; padding: 5px; border-radius: 4px; font-size: 13px; text-align: center; font-weight: bold; }
+    .result-box { margin-top: 8px; background: #f1f5f9; padding: 6px; border-radius: 4px; text-align: center; border: 1px solid #cbd5e1; }
+    .result-label { font-size: 10px; color: #475569; font-weight: bold; text-transform: uppercase; }
+    .result-val { font-size: 15px; font-weight: 700; color: #16a34a; margin-top: 1px; }
+    .result-val.low { color: #dc2626; }
+    .action-btn-zone { display: flex; gap: 8px; margin-top: 10px; }
+    .update-btn { flex: 2; background: #16a34a; color: #fff; border: none; font-family: 'Bebas Neue', sans-serif; font-size: 20px; padding: 10px; border-radius: 6px; cursor: pointer; }
+    .clear-btn { flex: 1; background: #64748b; color: #fff; border: none; font-family: 'Bebas Neue', sans-serif; font-size: 20px; padding: 10px; border-radius: 6px; cursor: pointer; }
+    .firebase-status { font-size: 10px; text-align: center; margin-top: 6px; color: #64748b; }
+
+    /* CONCURENTA */
+    .comp-group-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: #fff; padding: 6px 10px; border-radius: 6px; margin: 10px 0 8px 0; }
+    .gt-exchange { background: #0284c7; }
+    .gt-bank { background: #1e40af; }
+    .comp-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .comp-card-left { display: flex; flex-direction: column; gap: 4px; }
+    .comp-card-name { font-size: 17px; font-weight: bold; color: #0f172a; }
+    .comp-card-loc { font-size: 11px; font-weight: bold; padding: 2px 7px; border-radius: 10px; width: fit-content; }
+    .loc-vl { background: #ffedd5; color: #9a3412; }
+    .loc-buc { background: #f3e8ff; color: #6b21a8; }
+    .loc-bnk { background: #dbeafe; color: #1e40af; }
+    .comp-card-right { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+    .ext-btn { display: inline-flex; align-items: center; gap: 5px; padding: 8px 14px; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 17px; text-decoration: none; color: #fff; }
+    .btn-valutare { background: #0284c7; }
+    .btn-site { background: #16a34a; }
+
+    /* CALCULATOR */
+    .calc-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+    .calc-tab { flex: 1; padding: 10px 4px; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 18px; text-align: center; cursor: pointer; border: 2px solid #cbd5e1; background: #e2e8f0; color: #475569; }
+    .calc-tab.active { background: #0284c7; color: #fff; border-color: #0284c7; }
+    .calc-content { display: none; }
+    .calc-content.active { display: block; }
+
+    /* Calculator 1 - Valuta -> RON */
+    .calc-row { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
+    .calc-row-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .calc-flag { font-size: 22px; }
+    .calc-curr-name { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: #0f172a; }
+    .calc-inputs { display: flex; gap: 8px; margin-bottom: 8px; }
+    .calc-input-group { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+    .calc-input-label { font-size: 10px; color: #64748b; font-weight: bold; text-transform: uppercase; }
+    .calc-input { width: 100%; background: #fff; border: 2px solid #cbd5e1; color: #0f172a; padding: 8px; border-radius: 6px; font-size: 15px; text-align: center; font-weight: bold; font-family: 'Oswald', sans-serif; }
+    .calc-input.rate { border-color: #0284c7; color: #0284c7; }
+    .calc-input.amount { border-color: #7c3aed; color: #7c3aed; }
+    .calc-input:focus { outline: none; border-color: #0284c7; }
+    .calc-result { background: #0f172a; border-radius: 8px; padding: 10px; text-align: center; }
+    .calc-result-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: bold; margin-bottom: 3px; }
+    .calc-result-val { font-size: 24px; font-weight: 700; color: #4ade80; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
+
+    .calc-total-box { background: #1e40af; border-radius: 10px; padding: 14px; margin-top: 10px; text-align: center; }
+    .calc-total-label { font-size: 12px; color: #93c5fd; font-weight: bold; text-transform: uppercase; margin-bottom: 4px; }
+    .calc-total-val { font-size: 30px; font-weight: 700; color: #fff; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
+    .calc-reset-btn { width: 100%; background: #64748b; color: #fff; border: none; font-family: 'Bebas Neue', sans-serif; font-size: 20px; padding: 10px; border-radius: 6px; cursor: pointer; margin-top: 10px; }
+
+    /* Calculator 2 - Procent */
+    .pct-calc-row { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
+    .pct-calc-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .pct-calc-name { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: #0f172a; }
+    .pct-inputs { display: flex; gap: 8px; margin-bottom: 8px; }
+    .pct-input-group { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+    .pct-inp-label { font-size: 10px; color: #64748b; font-weight: bold; text-transform: uppercase; }
+    .pct-inp { width: 100%; background: #fff; border: 2px solid #cbd5e1; color: #0f172a; padding: 8px; border-radius: 6px; font-size: 15px; text-align: center; font-weight: bold; font-family: 'Oswald', sans-serif; }
+    .pct-inp.suma { border-color: #7c3aed; color: #7c3aed; }
+    .pct-inp.procent { border-color: #b45309; color: #b45309; }
+    .pct-inp:focus { outline: none; }
+    .pct-result { display: flex; gap: 8px; }
+    .pct-res-box { flex: 1; border-radius: 8px; padding: 8px; text-align: center; }
+    .pct-res-box.minus { background: #fef2f2; border: 1px solid #fecaca; }
+    .pct-res-box.plus { background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .pct-res-label { font-size: 9px; color: #64748b; text-transform: uppercase; font-weight: bold; margin-bottom: 2px; }
+    .pct-res-val { font-size: 18px; font-weight: 700; font-family: 'Bebas Neue', sans-serif; }
+    .pct-res-val.red { color: #dc2626; }
+    .pct-res-val.green { color: #16a34a; }
+
+    .pct-global { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 14px; }
+    .pct-global-title { font-size: 12px; color: #475569; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; }
+    .pct-global-inp { display: flex; align-items: center; gap: 8px; }
+    .pct-global-input { flex: 1; background: #fff; border: 2px solid #b45309; color: #b45309; padding: 8px; border-radius: 6px; font-size: 16px; text-align: center; font-weight: bold; font-family: 'Oswald', sans-serif; }
+    .pct-apply-btn { background: #b45309; color: #fff; border: none; border-radius: 6px; padding: 8px 14px; font-family: 'Bebas Neue', sans-serif; font-size: 18px; cursor: pointer; white-space: nowrap; }
+
+    /* GRAFICE */
+    .ticker-container { margin-bottom: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+    .ticker-label { font-size: 11px; font-weight: bold; color: #475569; padding: 6px 10px 2px 10px; text-transform: uppercase; }
+    .widget-box { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; height: 480px; margin-bottom: 20px; overflow: hidden; }
+    .widget-box iframe { width: 100%; height: 100%; border: none; }
+    .chart-title { font-size: 14px; color: #334155; margin-bottom: 6px; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="title">🎛️ COMANDA TOTALĂ MOBILĂ</div>
+  <div class="status-bar">
+    <div class="clock" id="liveClock">--:--:--</div>
+    <div class="alert-zone" id="globalStatus">⚡ LIVE</div>
+  </div>
+</div>
+
+<div class="fast-nav">
+  <div class="nav-btn active" onclick="switchTab('banci-sectiune', this)">📅<br>Gestiune</div>
+  <div class="nav-btn" onclick="switchTab('concurenta', this)">👑<br>Concurență</div>
+  <div class="nav-btn" onclick="switchTab('calculator', this)">🧮<br>Calculator</div>
+  <div class="nav-btn" onclick="switchTab('forex', this)">📈<br>Grafice</div>
+</div>
+
+<!-- PLANNER -->
+<div class="section-container" id="banci-sectiune" style="display:block;">
+  <div class="section-title">Panou Gestiune Programări</div>
+  <div class="planner-grid">
+    <div class="planner-col">
+      <div class="col-header col-sermirav">SERMIRAV</div>
+      <div class="currency-block">
+        <div class="currency-title title-ron">🇷🇴 RON</div>
+        <span class="input-label">Sumă Programată:</span>
+        <input type="number" id="s_ron_prog" class="prog-input" placeholder="Ex: 300000">
+        <span class="input-label">Retrageri:</span>
+        <div class="withdrawal-inputs">
+          <input type="number" class="withdraw-input s-ron-w" placeholder="Retragere 1">
+          <input type="number" class="withdraw-input s-ron-w" placeholder="Retragere 2">
+          <input type="number" class="withdraw-input s-ron-w" placeholder="Retragere 3">
+          <input type="number" class="withdraw-input s-ron-w" placeholder="Retragere 4">
+          <input type="number" class="withdraw-input s-ron-w" placeholder="Retragere 5">
+          <input type="number" class="withdraw-input s-ron-w" placeholder="Retragere 6">
+        </div>
+        <div class="result-box"><div class="result-label">Rest RON</div><div class="result-val" id="res_s_ron">0 lei</div></div>
+      </div>
+      <div class="currency-block">
+        <div class="currency-title title-usd">🇺🇸 USD</div>
+        <span class="input-label">Sumă Programată:</span>
+        <input type="number" id="s_usd_prog" class="prog-input" placeholder="Ex: 50000">
+        <span class="input-label">Retrageri:</span>
+        <div class="withdrawal-inputs">
+          <input type="number" class="withdraw-input s-usd-w" placeholder="Retragere 1">
+          <input type="number" class="withdraw-input s-usd-w" placeholder="Retragere 2">
+          <input type="number" class="withdraw-input s-usd-w" placeholder="Retragere 3">
+        </div>
+        <div class="result-box"><div class="result-label">Rest USD</div><div class="result-val" id="res_s_usd">$0</div></div>
+      </div>
+      <div class="currency-block">
+        <div class="currency-title title-eur">🇪🇺 EUR</div>
+        <span class="input-label">Sumă Programată:</span>
+        <input type="number" id="s_eur_prog" class="prog-input" placeholder="Ex: 40000">
+        <span class="input-label">Retrageri:</span>
+        <div class="withdrawal-inputs">
+          <input type="number" class="withdraw-input s-eur-w" placeholder="Retragere 1">
+          <input type="number" class="withdraw-input s-eur-w" placeholder="Retragere 2">
+          <input type="number" class="withdraw-input s-eur-w" placeholder="Retragere 3">
+        </div>
+        <div class="result-box"><div class="result-label">Rest EUR</div><div class="result-val" id="res_s_eur">€0</div></div>
+      </div>
+    </div>
+    <div class="planner-col">
+      <div class="col-header col-seba">SEBA</div>
+      <div class="currency-block">
+        <div class="currency-title title-ron">🇷🇴 RON</div>
+        <span class="input-label">Sumă Programată:</span>
+        <input type="number" id="b_ron_prog" class="prog-input" placeholder="Ex: 300000">
+        <span class="input-label">Retrageri:</span>
+        <div class="withdrawal-inputs">
+          <input type="number" class="withdraw-input b-ron-w" placeholder="Retragere 1">
+          <input type="number" class="withdraw-input b-ron-w" placeholder="Retragere 2">
+          <input type="number" class="withdraw-input b-ron-w" placeholder="Retragere 3">
+          <input type="number" class="withdraw-input b-ron-w" placeholder="Retragere 4">
+          <input type="number" class="withdraw-input b-ron-w" placeholder="Retragere 5">
+          <input type="number" class="withdraw-input b-ron-w" placeholder="Retragere 6">
+        </div>
+        <div class="result-box"><div class="result-label">Rest RON</div><div class="result-val" id="res_b_ron">0 lei</div></div>
+      </div>
+      <div class="currency-block">
+        <div class="currency-title title-usd">🇺🇸 USD</div>
+        <span class="input-label">Sumă Programată:</span>
+        <input type="number" id="b_usd_prog" class="prog-input" placeholder="Ex: 50000">
+        <span class="input-label">Retrageri:</span>
+        <div class="withdrawal-inputs">
+          <input type="number" class="withdraw-input b-usd-w" placeholder="Retragere 1">
+          <input type="number" class="withdraw-input b-usd-w" placeholder="Retragere 2">
+          <input type="number" class="withdraw-input b-usd-w" placeholder="Retragere 3">
+        </div>
+        <div class="result-box"><div class="result-label">Rest USD</div><div class="result-val" id="res_b_usd">$0</div></div>
+      </div>
+      <div class="currency-block">
+        <div class="currency-title title-eur">🇪🇺 EUR</div>
+        <span class="input-label">Sumă Programată:</span>
+        <input type="number" id="b_eur_prog" class="prog-input" placeholder="Ex: 40000">
+        <span class="input-label">Retrageri:</span>
+        <div class="withdrawal-inputs">
+          <input type="number" class="withdraw-input b-eur-w" placeholder="Retragere 1">
+          <input type="number" class="withdraw-input b-eur-w" placeholder="Retragere 2">
+          <input type="number" class="withdraw-input b-eur-w" placeholder="Retragere 3">
+        </div>
+        <div class="result-box"><div class="result-label">Rest EUR</div><div class="result-val" id="res_b_eur">€0</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="action-btn-zone">
+    <button class="update-btn" onclick="saveAndCalculate()">🔄 Salvează & Actualizează</button>
+    <button class="clear-btn" onclick="clearPlanner()">❌ Șterge</button>
+  </div>
+  <div class="firebase-status" id="firebase-status">⏳ Se conectează la Firebase...</div>
+</div>
+
+<!-- CONCURENTA -->
+<div class="section-container" id="concurenta">
+  <div class="section-title">Cursuri Concurență</div>
+  <div class="comp-group-title gt-exchange">🏪 Case de Schimb</div>
+  <div class="comp-card">
+    <div class="comp-card-left"><span class="comp-card-name">Optim Exchange</span><span class="comp-card-loc loc-vl">📍 Râmnicu Vâlcea</span></div>
+    <div class="comp-card-right"><a href="https://www.valutare.ro/curs/numar-telefon-adresa-optim-exchange.html" target="_blank" class="ext-btn btn-valutare">↗️ Valutare</a></div>
+  </div>
+  <div class="comp-card">
+    <div class="comp-card-left"><span class="comp-card-name">Family Exchange</span><span class="comp-card-loc loc-vl">📍 Ostroveni</span></div>
+    <div class="comp-card-right"><a href="https://www.valutare.ro/curs/numar-telefon-adresa-family-exchange-ostroveni-cina-luceafarului5-.html" target="_blank" class="ext-btn btn-valutare">↗️ Valutare</a></div>
+  </div>
+  <div class="comp-card">
+    <div class="comp-card-left"><span class="comp-card-name">Azad Exchange</span><span class="comp-card-loc loc-buc">📍 Buc. Unirii</span></div>
+    <div class="comp-card-right"><a href="https://www.valutare.ro/curs/numar-telefon-adresa-azad-exchange-srl-unirii.html" target="_blank" class="ext-btn btn-valutare">↗️ Valutare</a></div>
+  </div>
+  <div class="comp-card">
+    <div class="comp-card-left"><span class="comp-card-name">Holux București</span><span class="comp-card-loc loc-buc">📍 București</span></div>
+    <div class="comp-card-right"><a href="https://www.valutare.ro/curs/numar-telefon-adresa-Holux-bucuresti.html" target="_blank" class="ext-btn btn-valutare">↗️ Valutare</a></div>
+  </div>
+  <div class="comp-group-title gt-bank">🏦 Bănci</div>
+  <div class="comp-card">
+    <div class="comp-card-left"><span class="comp-card-name">CEC Bank</span><span class="comp-card-loc loc-bnk">🏦 Ghișeu bancă</span></div>
+    <div class="comp-card-right">
+      <a href="https://www.cec.ro/curs-valutar" target="_blank" class="ext-btn btn-site">↗️ CEC.ro</a>
+      <a href="https://www.valutare.ro/curs/numar-telefon-adresa-cec.html" target="_blank" class="ext-btn btn-valutare">↗️ Valutare</a>
+    </div>
+  </div>
+  <div class="comp-card">
+    <div class="comp-card-left"><span class="comp-card-name">Exim Bank</span><span class="comp-card-loc loc-bnk">🏦 Ghișeu bancă</span></div>
+    <div class="comp-card-right">
+      <a href="https://eximbank.ro/curs-valutar/" target="_blank" class="ext-btn btn-site">↗️ Exim.ro</a>
+      <a href="https://www.valutare.ro/curs/numar-telefon-adresa-exim.html" target="_blank" class="ext-btn btn-valutare">↗️ Valutare</a>
+    </div>
+  </div>
+</div>
+
+<!-- CALCULATOR -->
+<div class="section-container" id="calculator">
+  <div class="section-title">Calculator</div>
+
+  <div class="calc-tabs">
+    <div class="calc-tab active" onclick="switchCalc('calc1', this)">💱 Valută → RON</div>
+    <div class="calc-tab" onclick="switchCalc('calc2', this)">📊 Calculator %</div>
+  </div>
+
+  <!-- CALCULATOR 1: Valuta -> RON -->
+  <div class="calc-content active" id="calc1">
+
+    <!-- EUR -->
+    <div class="calc-row">
+      <div class="calc-row-header"><span class="calc-flag">🇪🇺</span><span class="calc-curr-name">EURO</span></div>
+      <div class="calc-inputs">
+        <div class="calc-input-group">
+          <span class="calc-input-label">Curs EUR</span>
+          <input type="number" class="calc-input rate" id="rate_eur" placeholder="5.25" step="0.001" oninput="calcRON('eur')">
+        </div>
+        <div class="calc-input-group">
+          <span class="calc-input-label">Sumă EUR</span>
+          <input type="number" class="calc-input amount" id="amt_eur" placeholder="1000" oninput="calcRON('eur')">
+        </div>
+      </div>
+      <div class="calc-result">
+        <div class="calc-result-label">Echivalent RON</div>
+        <div class="calc-result-val" id="ron_eur">— lei</div>
+      </div>
+    </div>
+
+    <!-- USD -->
+    <div class="calc-row">
+      <div class="calc-row-header"><span class="calc-flag">🇺🇸</span><span class="calc-curr-name">DOLAR USD</span></div>
+      <div class="calc-inputs">
+        <div class="calc-input-group">
+          <span class="calc-input-label">Curs USD</span>
+          <input type="number" class="calc-input rate" id="rate_usd" placeholder="4.55" step="0.001" oninput="calcRON('usd')">
+        </div>
+        <div class="calc-input-group">
+          <span class="calc-input-label">Sumă USD</span>
+          <input type="number" class="calc-input amount" id="amt_usd" placeholder="1000" oninput="calcRON('usd')">
+        </div>
+      </div>
+      <div class="calc-result">
+        <div class="calc-result-label">Echivalent RON</div>
+        <div class="calc-result-val" id="ron_usd">— lei</div>
+      </div>
+    </div>
+
+    <!-- GBP -->
+    <div class="calc-row">
+      <div class="calc-row-header"><span class="calc-flag">🇬🇧</span><span class="calc-curr-name">LIRĂ GBP</span></div>
+      <div class="calc-inputs">
+        <div class="calc-input-group">
+          <span class="calc-input-label">Curs GBP</span>
+          <input type="number" class="calc-input rate" id="rate_gbp" placeholder="6.05" step="0.001" oninput="calcRON('gbp')">
+        </div>
+        <div class="calc-input-group">
+          <span class="calc-input-label">Sumă GBP</span>
+          <input type="number" class="calc-input amount" id="amt_gbp" placeholder="1000" oninput="calcRON('gbp')">
+        </div>
+      </div>
+      <div class="calc-result">
+        <div class="calc-result-label">Echivalent RON</div>
+        <div class="calc-result-val" id="ron_gbp">— lei</div>
+      </div>
+    </div>
+
+    <!-- CHF -->
+    <div class="calc-row">
+      <div class="calc-row-header"><span class="calc-flag">🇨🇭</span><span class="calc-curr-name">FRANC CHF</span></div>
+      <div class="calc-inputs">
+        <div class="calc-input-group">
+          <span class="calc-input-label">Curs CHF</span>
+          <input type="number" class="calc-input rate" id="rate_chf" placeholder="5.70" step="0.001" oninput="calcRON('chf')">
+        </div>
+        <div class="calc-input-group">
+          <span class="calc-input-label">Sumă CHF</span>
+          <input type="number" class="calc-input amount" id="amt_chf" placeholder="1000" oninput="calcRON('chf')">
+        </div>
+      </div>
+      <div class="calc-result">
+        <div class="calc-result-label">Echivalent RON</div>
+        <div class="calc-result-val" id="ron_chf">— lei</div>
+      </div>
+    </div>
+
+    <!-- TOTAL -->
+    <div class="calc-total-box">
+      <div class="calc-total-label">💰 Total RON (toate valutele)</div>
+      <div class="calc-total-val" id="ron_total">0 lei</div>
+    </div>
+    <button class="calc-reset-btn" onclick="resetCalc1()">🗑️ Resetează Calculator</button>
+  </div>
+
+  <!-- CALCULATOR 2: Procente -->
+  <div class="calc-content" id="calc2">
+
+    <div class="pct-global">
+      <div class="pct-global-title">⚙️ Aplică același procent la toate</div>
+      <div class="pct-global-inp">
+        <input type="number" class="pct-global-input" id="global_pct" placeholder="-0.35" step="0.01">
+        <button class="pct-apply-btn" onclick="applyGlobalPct()">Aplică %</button>
+      </div>
+    </div>
+
+    <!-- RON -->
+    <div class="pct-calc-row">
+      <div class="pct-calc-header"><span class="calc-flag">🇷🇴</span><span class="pct-calc-name">LEI RON</span></div>
+      <div class="pct-inputs">
+        <div class="pct-input-group">
+          <span class="pct-inp-label">Sumă RON</span>
+          <input type="number" class="pct-inp suma" id="psum_ron" placeholder="10000" oninput="calcPct('ron')">
+        </div>
+        <div class="pct-input-group">
+          <span class="pct-inp-label">Procent %</span>
+          <input type="number" class="pct-inp procent" id="ppct_ron" placeholder="-0.35" step="0.01" oninput="calcPct('ron')">
+        </div>
+      </div>
+      <div class="pct-result">
+        <div class="pct-res-box minus">
+          <div class="pct-res-label">Diferență</div>
+          <div class="pct-res-val red" id="pdiff_ron">—</div>
+        </div>
+        <div class="pct-res-box plus">
+          <div class="pct-res-label">Rezultat Final</div>
+          <div class="pct-res-val green" id="pres_ron">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EUR -->
+    <div class="pct-calc-row">
+      <div class="pct-calc-header"><span class="calc-flag">🇪🇺</span><span class="pct-calc-name">EURO EUR</span></div>
+      <div class="pct-inputs">
+        <div class="pct-input-group">
+          <span class="pct-inp-label">Sumă EUR</span>
+          <input type="number" class="pct-inp suma" id="psum_eur" placeholder="1000" oninput="calcPct('eur')">
+        </div>
+        <div class="pct-input-group">
+          <span class="pct-inp-label">Procent %</span>
+          <input type="number" class="pct-inp procent" id="ppct_eur" placeholder="-0.35" step="0.01" oninput="calcPct('eur')">
+        </div>
+      </div>
+      <div class="pct-result">
+        <div class="pct-res-box minus">
+          <div class="pct-res-label">Diferență</div>
+          <div class="pct-res-val red" id="pdiff_eur">—</div>
+        </div>
+        <div class="pct-res-box plus">
+          <div class="pct-res-label">Rezultat Final</div>
+          <div class="pct-res-val green" id="pres_eur">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USD -->
+    <div class="pct-calc-row">
+      <div class="pct-calc-header"><span class="calc-flag">🇺🇸</span><span class="pct-calc-name">DOLAR USD</span></div>
+      <div class="pct-inputs">
+        <div class="pct-input-group">
+          <span class="pct-inp-label">Sumă USD</span>
+          <input type="number" class="pct-inp suma" id="psum_usd" placeholder="1000" oninput="calcPct('usd')">
+        </div>
+        <div class="pct-input-group">
+          <span class="pct-inp-label">Procent %</span>
+          <input type="number" class="pct-inp procent" id="ppct_usd" placeholder="-0.35" step="0.01" oninput="calcPct('usd')">
+        </div>
+      </div>
+      <div class="pct-result">
+        <div class="pct-res-box minus">
+          <div class="pct-res-label">Diferență</div>
+          <div class="pct-res-val red" id="pdiff_usd">—</div>
+        </div>
+        <div class="pct-res-box plus">
+          <div class="pct-res-label">Rezultat Final</div>
+          <div class="pct-res-val green" id="pres_usd">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GBP -->
+    <div class="pct-calc-row">
+      <div class="pct-calc-header"><span class="calc-flag">🇬🇧</span><span class="pct-calc-name">LIRĂ GBP</span></div>
+      <div class="pct-inputs">
+        <div class="pct-input-group">
+          <span class="pct-inp-label">Sumă GBP</span>
+          <input type="number" class="pct-inp suma" id="psum_gbp" placeholder="1000" oninput="calcPct('gbp')">
+        </div>
+        <div class="pct-input-group">
+          <span class="pct-inp-label">Procent %</span>
+          <input type="number" class="pct-inp procent" id="ppct_gbp" placeholder="-0.35" step="0.01" oninput="calcPct('gbp')">
+        </div>
+      </div>
+      <div class="pct-result">
+        <div class="pct-res-box minus">
+          <div class="pct-res-label">Diferență</div>
+          <div class="pct-res-val red" id="pdiff_gbp">—</div>
+        </div>
+        <div class="pct-res-box plus">
+          <div class="pct-res-label">Rezultat Final</div>
+          <div class="pct-res-val green" id="pres_gbp">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHF -->
+    <div class="pct-calc-row">
+      <div class="pct-calc-header"><span class="calc-flag">🇨🇭</span><span class="pct-calc-name">FRANC CHF</span></div>
+      <div class="pct-inputs">
+        <div class="pct-input-group">
+          <span class="pct-inp-label">Sumă CHF</span>
+          <input type="number" class="pct-inp suma" id="psum_chf" placeholder="1000" oninput="calcPct('chf')">
+        </div>
+        <div class="pct-input-group">
+          <span class="pct-inp-label">Procent %</span>
+          <input type="number" class="pct-inp procent" id="ppct_chf" placeholder="-0.35" step="0.01" oninput="calcPct('chf')">
+        </div>
+      </div>
+      <div class="pct-result">
+        <div class="pct-res-box minus">
+          <div class="pct-res-label">Diferență</div>
+          <div class="pct-res-val red" id="pdiff_chf">—</div>
+        </div>
+        <div class="pct-res-box plus">
+          <div class="pct-res-label">Rezultat Final</div>
+          <div class="pct-res-val green" id="pres_chf">—</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="calc-reset-btn" onclick="resetCalc2()">🗑️ Resetează Calculator</button>
+  </div>
+</div>
+
+<!-- GRAFICE -->
+<div class="section-container" id="forex">
+  <div class="section-title">Variații Live RON</div>
+  <div class="ticker-label">🇪🇺 EUR / RON</div>
+  <div class="ticker-container">
+    <div class="tradingview-widget-container">
+      <div class="tradingview-widget-container__widget"></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>{"symbol":"FX_IDC:EURRON","width":"100%","colorTheme":"light","isTransparent":true,"locale":"en"}</script>
+    </div>
+  </div>
+  <div class="ticker-label">🇺🇸 USD / RON</div>
+  <div class="ticker-container">
+    <div class="tradingview-widget-container">
+      <div class="tradingview-widget-container__widget"></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>{"symbol":"FX_IDC:USDRON","width":"100%","colorTheme":"light","isTransparent":true,"locale":"en"}</script>
+    </div>
+  </div>
+  <div class="ticker-label">🇬🇧 GBP / RON</div>
+  <div class="ticker-container">
+    <div class="tradingview-widget-container">
+      <div class="tradingview-widget-container__widget"></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>{"symbol":"FX_IDC:GBPRON","width":"100%","colorTheme":"light","isTransparent":true,"locale":"en"}</script>
+    </div>
+  </div>
+  <div class="ticker-label">🇨🇭 CHF / RON</div>
+  <div class="ticker-container">
+    <div class="tradingview-widget-container">
+      <div class="tradingview-widget-container__widget"></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>{"symbol":"FX_IDC:CHFRON","width":"100%","colorTheme":"light","isTransparent":true,"locale":"en"}</script>
+    </div>
+  </div>
+  <div class="ticker-label">🇭🇺 HUF / RON</div>
+  <div class="ticker-container">
+    <div class="tradingview-widget-container">
+      <div class="tradingview-widget-container__widget"></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>{"symbol":"FX_IDC:HUFRON","width":"100%","colorTheme":"light","isTransparent":true,"locale":"en"}</script>
+    </div>
+  </div>
+  <div style="height:16px;"></div>
+  <div class="chart-title">📊 EUR / RON (15 Min)</div>
+  <div class="widget-box"><iframe src="https://s.tradingview.com/widgetembed/?frameElementId=tv1&symbol=FX_IDC%3AEURRON&interval=15&theme=light&style=1&timezone=Europe%2FBucharest" allowtransparency="true"></iframe></div>
+  <div class="chart-title">📊 USD / RON (15 Min)</div>
+  <div class="widget-box"><iframe src="https://s.tradingview.com/widgetembed/?frameElementId=tv2&symbol=FX_IDC%3AUSDRON&interval=15&theme=light&style=1&timezone=Europe%2FBucharest" allowtransparency="true"></iframe></div>
+  <div class="chart-title">📊 GBP / RON (15 Min)</div>
+  <div class="widget-box"><iframe src="https://s.tradingview.com/widgetembed/?frameElementId=tv3&symbol=FX_IDC%3AGBPRON&interval=15&theme=light&style=1&timezone=Europe%2FBucharest" allowtransparency="true"></iframe></div>
+  <div class="chart-title">📊 CHF / RON (15 Min)</div>
+  <div class="widget-box"><iframe src="https://s.tradingview.com/widgetembed/?frameElementId=tv4&symbol=FX_IDC%3ACHFRON&interval=15&theme=light&style=1&timezone=Europe%2FBucharest" allowtransparency="true"></iframe></div>
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyCN9eB_0D2VZbCSrTnBk-mDTVPIjSCr3hA",
+    authDomain: "licitatii-schimb.firebaseapp.com",
+    databaseURL: "https://licitatii-schimb-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "licitatii-schimb",
+    storageBucket: "licitatii-schimb.firebasestorage.app",
+    messagingSenderId: "206650424464",
+    appId: "1:206650424464:web:c214f70fc3e2d4acacac15"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const dbRef = ref(db, "comanda/programari");
+
+  function getFormData() {
+    const d = {};
+    ["s_ron_prog","s_usd_prog","s_eur_prog","b_ron_prog","b_usd_prog","b_eur_prog"].forEach(id => { d[id] = document.getElementById(id).value || ""; });
+    ["s-ron-w","s-usd-w","s-eur-w","b-ron-w","b-usd-w","b-eur-w"].forEach(cls => { d[cls] = Array.from(document.querySelectorAll("." + cls)).map(i => i.value || ""); });
+    return d;
+  }
+
+  function applyFormData(d) {
+    ["s_ron_prog","s_usd_prog","s_eur_prog","b_ron_prog","b_usd_prog","b_eur_prog"].forEach(id => { if (d[id] !== undefined) document.getElementById(id).value = d[id]; });
+    ["s-ron-w","s-usd-w","s-eur-w","b-ron-w","b-usd-w","b-eur-w"].forEach(cls => {
+      if (d[cls]) document.querySelectorAll("." + cls).forEach((inp, i) => { if (d[cls][i] !== undefined) inp.value = d[cls][i]; });
+    });
+    executeMath(d);
+  }
+
+  window.saveAndCalculate = async function() {
+    const d = getFormData();
+    try {
+      await set(dbRef, d);
+      document.getElementById("firebase-status").innerText = "✅ Salvat în Firebase la " + new Date().toLocaleTimeString("ro-RO");
+    } catch(e) {
+      document.getElementById("firebase-status").innerText = "❌ Eroare: " + e.message;
+    }
+    executeMath(d);
+  };
+
+  window.clearPlanner = async function() {
+    if (confirm("Ștergi toate datele?")) {
+      await set(dbRef, {});
+      document.querySelectorAll(".prog-input,.withdraw-input").forEach(i => i.value = "");
+      executeMath({});
+      document.getElementById("firebase-status").innerText = "✅ Date șterse";
+    }
+  };
+
+  try {
+    const snap = await get(dbRef);
+    if (snap.exists()) {
+      applyFormData(snap.val());
+      document.getElementById("firebase-status").innerText = "✅ Date încărcate din Firebase";
+    } else {
+      document.getElementById("firebase-status").innerText = "✅ Firebase conectat";
+    }
+  } catch(e) {
+    document.getElementById("firebase-status").innerText = "❌ Firebase: " + e.message;
+  }
+</script>
+
+<script>
+  function switchTab(id, el) {
+    document.querySelectorAll(".section-container").forEach(s => s.style.display = "none");
+    document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById(id).style.display = "block";
+    el.classList.add("active");
+    window.scrollTo({top:0, behavior:"smooth"});
+  }
+
+  function switchCalc(id, el) {
+    document.querySelectorAll(".calc-content").forEach(c => c.classList.remove("active"));
+    document.querySelectorAll(".calc-tab").forEach(b => b.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    el.classList.add("active");
+  }
+
+  // ===== CALCULATOR 1: Valuta -> RON =====
+  function calcRON(curr) {
+    const rate = parseFloat(document.getElementById("rate_" + curr).value) || 0;
+    const amt = parseFloat(document.getElementById("amt_" + curr).value) || 0;
+    const result = rate * amt;
+    const el = document.getElementById("ron_" + curr);
+    el.innerText = result > 0 ? result.toLocaleString("ro-RO", {minimumFractionDigits:2, maximumFractionDigits:2}) + " lei" : "— lei";
+    updateTotal();
+  }
+
+  function updateTotal() {
+    const total = ["eur","usd","gbp","chf"].reduce((sum, curr) => {
+      const rate = parseFloat(document.getElementById("rate_" + curr).value) || 0;
+      const amt = parseFloat(document.getElementById("amt_" + curr).value) || 0;
+      return sum + rate * amt;
+    }, 0);
+    document.getElementById("ron_total").innerText = total > 0
+      ? total.toLocaleString("ro-RO", {minimumFractionDigits:2, maximumFractionDigits:2}) + " lei"
+      : "0 lei";
+  }
+
+  function resetCalc1() {
+    ["eur","usd","gbp","chf"].forEach(curr => {
+      document.getElementById("rate_" + curr).value = "";
+      document.getElementById("amt_" + curr).value = "";
+      document.getElementById("ron_" + curr).innerText = "— lei";
+    });
+    document.getElementById("ron_total").innerText = "0 lei";
+  }
+
+  // ===== CALCULATOR 2: Procente =====
+  function calcPct(curr) {
+    const suma = parseFloat(document.getElementById("psum_" + curr).value) || 0;
+    const pct = parseFloat(document.getElementById("ppct_" + curr).value) || 0;
+    const diff = suma * (pct / 100);
+    const result = suma + diff;
+    const diffEl = document.getElementById("pdiff_" + curr);
+    const resEl = document.getElementById("pres_" + curr);
+
+    if (suma === 0) {
+      diffEl.innerText = "—";
+      resEl.innerText = "—";
+      return;
+    }
+
+    const sym = curr === "ron" ? " lei" : curr === "eur" ? " €" : curr === "usd" ? " $" : curr === "gbp" ? " £" : " CHF";
+    diffEl.innerText = diff.toLocaleString("ro-RO", {minimumFractionDigits:2, maximumFractionDigits:2}) + sym;
+    resEl.innerText = result.toLocaleString("ro-RO", {minimumFractionDigits:2, maximumFractionDigits:2}) + sym;
+  }
+
+  function applyGlobalPct() {
+    const pct = document.getElementById("global_pct").value;
+    if (!pct) return;
+    ["ron","eur","usd","gbp","chf"].forEach(curr => {
+      document.getElementById("ppct_" + curr).value = pct;
+      calcPct(curr);
+    });
+  }
+
+  function resetCalc2() {
+    ["ron","eur","usd","gbp","chf"].forEach(curr => {
+      document.getElementById("psum_" + curr).value = "";
+      document.getElementById("ppct_" + curr).value = "";
+      document.getElementById("pdiff_" + curr).innerText = "—";
+      document.getElementById("pres_" + curr).innerText = "—";
+    });
+    document.getElementById("global_pct").value = "";
+  }
+
+  // ===== PLANNER MATH =====
+  function executeMath(d) {
+    function sum(arr) { return (arr||[]).reduce((a,v) => a + (parseFloat(v)||0), 0); }
+    upd("res_s_ron", (parseFloat(d["s_ron_prog"])||0) - sum(d["s-ron-w"]), " lei");
+    upd("res_s_usd", (parseFloat(d["s_usd_prog"])||0) - sum(d["s-usd-w"]), " $");
+    upd("res_s_eur", (parseFloat(d["s_eur_prog"])||0) - sum(d["s-eur-w"]), " €");
+    upd("res_b_ron", (parseFloat(d["b_ron_prog"])||0) - sum(d["b-ron-w"]), " lei");
+    upd("res_b_usd", (parseFloat(d["b_usd_prog"])||0) - sum(d["b-usd-w"]), " $");
+    upd("res_b_eur", (parseFloat(d["b_eur_prog"])||0) - sum(d["b-eur-w"]), " €");
+  }
+
+  function upd(id, val, sym) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerText = val.toLocaleString("ro-RO") + sym;
+    val < 0 ? el.classList.add("low") : el.classList.remove("low");
+  }
+
+  setInterval(() => { document.getElementById("liveClock").innerText = new Date().toLocaleTimeString("ro-RO"); }, 1000);
+</script>
+</body>
+</html>
