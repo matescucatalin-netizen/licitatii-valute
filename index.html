@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Comandă Totală Mobilă</title>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Oswald', sans-serif; }
+    body { background: #f1f5f9; color: #0f172a; padding: 8px; font-size: 13px; }
+    .header { padding-bottom: 8px; border-bottom: 2px solid #cbd5e1; margin-bottom: 10px; }
+    .title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: #0284c7; text-align: center; }
+    .status-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+    .clock { font-size: 12px; color: #64748b; font-weight: bold; }
+    .alert-zone { font-size: 10px; color: #15803d; background: #dcfce7; padding: 2px 6px; border-radius: 4px; font-weight: bold; border: 1px solid #bbf7d0; }
+    .fast-nav { display: flex; gap: 3px; margin-bottom: 12px; flex-wrap: wrap; }
+    .nav-btn { flex: 1; min-width: 55px; background: #e2e8f0; border: 1px solid #cbd5e1; color: #475569; text-align: center; padding: 7px 2px; border-radius: 6px; font-size: 9px; font-weight: bold; text-transform: uppercase; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
+    .nav-btn.active { background: #0284c7; border-color: #0284c7; color: #fff; }
+    .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: #b45309; margin-bottom: 8px; border-left: 4px solid #b45309; padding-left: 8px; }
+    .section-container { display: none; background: #fff; padding: 8px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 12px; }
+
+    /* PLANNER */
+    .planner-grid { display: flex; gap: 8px; margin-bottom: 10px; }
+    .planner-col { flex: 1; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px; }
+    .col-header { font-family: 'Bebas Neue', sans-serif; font-size: 18px; text-align: center; margin-bottom: 8px; padding: 3px; border-radius: 4px; }
+    .col-sermirav { background: #2563eb; color: #fff; }
+    .col-seba { background: #7c3aed; color: #fff; }
+    .currency-block { background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px; margin-bottom: 8px; }
+    .currency-title { font-size: 12px; font-weight: bold; text-align: center; padding: 1px 0; margin-bottom: 5px; border-bottom: 1px dashed #cbd5e1; }
+    .title-ron { color: #b45309; } .title-usd { color: #0284c7; } .title-eur { color: #16a34a; }
+    .input-label { font-size: 9px; color: #475569; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; display: block; }
+    .prog-input { width: 100%; background: #fff5f5; border: 1px solid #dc2626; color: #b91c1c; padding: 5px; border-radius: 4px; font-size: 13px; text-align: center; font-weight: bold; margin-bottom: 6px; }
+    .withdrawal-inputs { display: flex; flex-direction: column; gap: 4px; }
+    .withdraw-input { width: 100%; background: #fff; border: 1px solid #94a3b8; color: #0f172a; padding: 4px; border-radius: 4px; font-size: 12px; text-align: center; font-weight: bold; }
+    .result-box { margin-top: 6px; background: #f1f5f9; padding: 5px; border-radius: 4px; text-align: center; border: 1px solid #cbd5e1; }
+    .result-label { font-size: 9px; color: #475569; font-weight: bold; text-transform: uppercase; }
+    .result-val { font-size: 14px; font-weight: 700; color: #16a34a; margin-top: 1px; }
+    .result-val.low { color: #dc2626; }
+    .action-btn-zone { display: flex; gap: 8px; margin-top: 8px; }
+    .update-btn { flex: 2; background: #16a34a; color: #fff; border: none; font-family: 'Bebas Neue', sans-serif; font-size: 18px; padding: 8px; border-radius: 6px; cursor: pointer; }
+    .clear-btn { flex: 1; background: #64748b; color: #fff; border: none; font-family: 'Bebas Neue', sans-serif; font-size: 18px; padding: 8px; border-radius: 6px; cursor: pointer; }
+    .firebase-status { font-size: 10px; text-align: center; margin-top: 5px; color: #64748b; }
+
+    /* MESAGERIE INTERNA */
+    .punct-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+    .punct-btn { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 10px; padding: 10px 8px; text-align: center; cursor: pointer; transition: all 0.15s; }
+    .punct-btn.selected { border-color: #0284c7; background: #eff6ff; }
+    .punct-btn.selected .punct-name { color: #0284c7; }
+    .punct-name { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: #0f172a; display: block; }
+    .punct-tel { font-size: 11px; color: #64748b; display: block; margin-top: 2px; }
+
+    .msg-builder { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
+    .msg-builder-title { font-size: 11px; font-weight: bold; color: #475569; text-transform: uppercase; margin-bottom: 8px; }
+
+    .msg-field { margin-bottom: 8px; }
+    .msg-field-label { font-size: 10px; color: #64748b; font-weight: bold; text-transform: uppercase; margin-bottom: 4px; display: block; }
+
+    .tip-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tip-btn { padding: 6px 12px; border-radius: 20px; border: 2px solid #cbd5e1; background: #fff; color: #475569; font-size: 12px; font-weight: bold; cursor: pointer; transition: all 0.15s; }
+    .tip-btn.selected { border-color: #0284c7; background: #0284c7; color: #fff; }
+
+    .dest-select { width: 100%; background: #fff; border: 2px solid #cbd5e1; color: #0f172a; padding: 8px; border-radius: 6px; font-size: 14px; font-family: 'Oswald', sans-serif; font-weight: bold; }
+    .dest-select:focus { border-color: #0284c7; outline: none; }
+
+    .msg-row { display: flex; gap: 6px; }
+    .msg-input { flex: 1; background: #fff; border: 2px solid #cbd5e1; color: #0f172a; padding: 8px; border-radius: 6px; font-size: 14px; text-align: center; font-weight: bold; font-family: 'Oswald', sans-serif; }
+    .msg-input:focus { border-color: #0284c7; outline: none; }
+
+    .valuta-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .val-btn { padding: 6px 10px; border-radius: 20px; border: 2px solid #cbd5e1; background: #fff; color: #475569; font-size: 12px; font-weight: bold; cursor: pointer; }
+    .val-btn.selected { border-color: #16a34a; background: #16a34a; color: #fff; }
+
+    .msg-preview { background: #0f172a; border-radius: 8px; padding: 10px; margin-bottom: 10px; min-height: 50px; }
+    .msg-preview-label { font-size: 9px; color: #64748b; text-transform: uppercase; margin-bottom: 4px; }
+    .msg-preview-text { font-size: 14px; color: #f1f5f9; line-height: 1.5; white-space: pre-wrap; }
+
+    .wa-send-btn { width: 100%; background: #25d366; color: #fff; border: none; border-radius: 8px; padding: 12px; font-family: 'Bebas Neue', sans-serif; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .wa-send-btn:active { background: #128c7e; }
+    .wa-disabled { background: #94a3b8 !important; cursor: not-allowed; }
+
+    /* CONCURENTA */
+    .comp-group-title { font-family: 'Bebas Neue', sans-serif; font-size: 16px; color: #fff; padding: 5px 8px; border-radius: 6px; margin: 8px 0 6px 0; }
+    .gt-exchange { background: #0284c7; }
+    .gt-bank { background: #1e40af; }
+    .comp-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .comp-card-left { display: flex; flex-direction: column; gap: 3px; }
+    .comp-card-name { font-size: 15px; font-weight: bold; color: #0f172a; }
+    .comp-card-loc { font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 8px; width: fit-content; }
+    .loc-vl { background: #ffedd5; color: #9a3412; }
+    .loc-buc { background: #f3e8ff; color: #6b21a8; }
+    .loc-bnk { background: #dbeafe; color: #1e40af; }
+    .comp-card-right { display: flex; flex-direction: column; gap: 5px; align-items: flex-end; }
+    .ext-btn { display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 6px; font-family: 'Bebas Neue', sans-serif; font-size: 15px; text-decoration: none; color: #fff; }
+    .btn-valutare { background: #0284c7; }
+    .btn-site { background: #16a34a; }
+
+    /* CALCULATOR */
+    .calc-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+    .calc-tab { flex: 1; padding: 8px 4px; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 16px; text-align: center; cursor: pointer; border: 2px solid #cbd5e1; background: #e2e8f0; color: #475569; }
+    .calc-tab.active { background: #0284c7; color: #fff; border-color: #0284c7; }
+    .calc-content { display: none; }
+    .calc-content.active { display: block; }
+    .calc-row { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; margin-bottom: 8px; }
+    .calc-row-top { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .calc-flag { font-size: 18px; }
+    .calc-curr-name { font-family: 'Bebas Neue', sans-serif; font-size: 17px; color: #0f172a; flex: 1; }
+    .calc-result-inline { font-family: 'Bebas Neue', sans-serif; font-size: 17px; color: #16a34a; text-align: right; }
+    .calc-inputs-row { display: flex; gap: 6px; }
+    .calc-input-group { flex: 1; }
+    .calc-input-label { font-size: 9px; color: #64748b; font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 2px; }
+    .calc-input { width: 100%; background: #fff; border: 2px solid #cbd5e1; color: #0f172a; padding: 6px; border-radius: 6px; font-size: 14px; text-align: center; font-weight: bold; font-family: 'Oswald', sans-serif; }
+    .calc-input.rate { border-color: #0284c7; color: #0284c7; }
+    .calc-input.amount { border-color: #7c3aed; color: #7c3aed; }
+    .calc-input:focus { outline: none; }
+    .calc-total-box { background: #0f172a; border-radius: 8px; padding: 10px; margin-top: 8px; text-align: center; }
+    .calc-total-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: bold; margin-bottom: 2px; }
+    .calc-total-val { font-size: 26px; font-weight: 700; color: #4ade80; font-family: 'Bebas Neue', sans-serif; }
+    .calc-reset-btn { width: 100%; background: #64748b; color: #fff; border: none; font-family: 'Bebas Neue', sans-serif; font-size: 18px; padding: 8px; border-radius: 6px; cursor: pointer; margin-top: 8px; }
+    .com-row { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; margin-bottom: 8px; }
+    .com-row-header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .com-curr-name { font-family: 'Bebas Neue', sans-serif; font-size: 17px; color: #0f172a; flex: 1; }
+    .com-inputs { display: flex; gap: 6px; margin-bottom: 6px; }
+    .com-input-group { flex: 1; }
+    .com-inp-label { font-size: 9px; color: #64748b; font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 2px; }
+    .com-inp { width: 100%; background: #fff; border: 2px solid #cbd5e1; color: #0f172a; padding: 6px; border-radius: 6px; font-size: 14px; text-align: center; font-weight: bold; font-family: 'Oswald', sans-serif; }
+    .com-inp.suma { border-color: #7c3aed; color: #7c3aed; }
+    .com-inp.pct { border-color: #b45309; color: #b45309; }
+    .com-inp:focus { outline: none; }
+    .com-results { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
+    .com-res-box { border-radius: 6px; padding: 5px 4px; text-align: center; }
+    .com-res-box.original { background: #f1f5f9; border: 1px solid #cbd5e1; }
+    .com-res-box.comision { background: #fef2f2; border: 1px solid #fecaca; }
+    .com-res-box.final { background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .com-res-label { font-size: 9px; color: #64748b; text-transform: uppercase; font-weight: bold; margin-bottom: 2px; }
+    .com-res-val { font-size: 14px; font-weight: 700; font-family: 'Bebas Neue', sans-serif; }
+    .com-res-val.gray { color: #475569; }
+    .com-res-val.red { color: #dc2626; }
+    .com-res-val.green { color: #16a34a; }
+    .com-global { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 8px; margin-bottom: 10px; }
+    .com-global-title { font-size: 10px; color: #92400e; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; }
+    .com-global-row { display: flex; gap: 6px; align-items: center; }
+    .com-global-inp { flex: 1; background: #fff; border: 2px solid #b45309; color: #b45309; padding: 6px; border-radius: 6px; font-size: 15px; text-align: center; font-weight: bold; font-family: 'Oswald', sans-serif; }
+    .com-apply-btn { background: #b45309; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-family: 'Bebas Neue', sans-serif; font-size: 17px; cursor: pointer; }
+
+    /* GRAFICE */
+    .ticker-wrap { margin-bottom: 6px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; }
+    .ticker-label { font-size: 10px; font-weight: bold; color: #475569; padding: 4px 8px 0 8px; text-transform: uppercase; }
+    .widget-box { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; height: 480px; margin-bottom: 16px; overflow: hidden; }
+    .widget-box iframe { width: 100%; height: 100%; border: none; }
+    .chart-title { font-size: 13px; color: #334155; margin-bottom: 5px; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="title">🎛️ COMANDA TOTALĂ MOBILĂ</div>
+  <div class="status-bar">
+    <div class="clock" id="liveClock">--:--:--</div>
+    <div class="alert-zone" id="globalStatus">⚡ LIVE</div>
+  </div>
+</div>
+
+<div class="fast-nav">
+  <div class="nav-btn active" onclick="switchTab('banci-sectiune', this)">📅<br>Gestiune</div>
+  <div class="nav-btn" onclick="switchTab('mesagerie', this)">💬<br>Puncte</div>
+  <div class="nav-btn" onclick="switchTab('concurenta', this)">👑<br>Concurență</div>
+  <div class="nav-btn" onclick="switchTab('calculator', this)">🧮<br>Calculator</div>
+  <div class="nav-btn" onclick="switchTab('forex', this)">📈<br>Grafice</div>
+</div>
+
+<!-- PLANNER -->
+<div class="section-container" id="banci-sectiune" style="display:block;">
+  <div class="section-title">Panou Gestiune Programări</div>
+  <div class="planner-grid">
+    <div class="planner-col">
+      <div class="col-header col-sermirav">SERMIRAV</div>
+      <div class="currency-block">
+        <div class="currency-title title-ron">🇷🇴 RON</div>
+        <span class="input-label">Sumă Programată:</span>
+        <input type="number" id="s_ron_prog" class="prog-input" placeholder="Ex: 300000">
+        <span class="input-label">Retrageri:</span>
+        <div class="withdrawal-inputs">
+          <input type="number" class="withdraw-input s-ron-w" placeholder="Retragere 1">
+          <input type="number" class="withdraw-input s-ron-w" placeholder="Retragere 2">
+          <input type="number" class="withdraw-input s-ron-w" placeholder="Retragere 3">
+          <input type="number" class="withdraw-input s-ron-w" placeholder="Retragere 4">
+          <input type="number" class="withdraw-input s-ron-w" placeholder="Retragere 5">
+          <input type="number" class="withdraw-input s-ron-w" placeholder="Retragere 6">
+        </div>
+        <div class="result-box"><div class="result-label">Rest RON</div><div class="result-val" id="res_s_ron">0 lei</div></div>
+      </div>
+      <div class="currency-block">
+        <div class="currency-title title-usd">🇺🇸 USD</div>
+        <span class="input-label">Sumă Programată:</span>
+        <input type="number" id="s_usd_prog" class="prog-input" placeholder="Ex: 50000">
+        <span class="input-label">Retrageri:</span>
+        <div class="withdrawal-inputs">
+          <input type="number" class="withdraw-input s-usd-w" placeholder="Retragere 1">
+          <input type="number" class="withdraw-input s-usd-w" placeholder="Retragere 2">
+          <input type="number" class="withdraw-input s-usd-w" placeholder="Retragere 3">
+        </div>
+        <div class="result-box"><div class="result-label">Rest USD</div><div class="result-val" id="res_s_usd">$0</div></div>
+      </div>
+      <div class="currency-block">
+        <div class="currency-title title-eur">🇪🇺 EUR</div>
+        <span class="input-label">Sumă Programată:</span>
+        <input type="number" id="s_eur_prog" class="prog-input" placeholder="Ex: 40000">
+        <span class="input-label">Retrageri:</span>
+        <div class="withdrawal-inputs">
+          <input type="number" class="withdraw-input s-eur-w" placeholder="Retragere 1">
+          <input type="number" class="withdraw-input s-eur-w" placeholder="Retragere 2">
+          <input type="number" class="withdraw-input s-eur-w" placeholder="Retragere 3">
+        </div>
+        <div class="result-box"><div class="result-label">Rest EUR</div><div class="result-val" id="res_s_eur">€0</div></div>
+      </div>
+    </div>
+    <div class="planner-col">
+      <div class="col-header col-seba">SEBA</div>
+      <div class="currency-block">
+        <div class="currency-title title-ron">🇷🇴 RON</div>
+        <span class="input-label">Sumă Programată:</span>
+        <input type="number" id="b_ron_prog" class="prog-input" placeholder="Ex: 300000">
+        <span class="input-label">Retrageri:</span>
+        <div class="withdrawal-inputs">
+          <input type="number" class="withdraw-input b-ron-w" placeholder="Retragere 1">
+          <input type="number" class="withdraw-input b-ron-w" placeholder="Retragere 2">
+          <input type="number" class="withdraw-input b-ron-w" placeholder="Retragere 3">
+          <input type="number" class="withdraw-input b-ron-w" placeholder="Retragere 4">
+          <input type="number" class="withdraw-input b-ron-w" placeholder="Retragere 5">
+          <input type="number" class="withdraw-input b-ron-w" placeholder="Retragere 6">
+        </div>
+        <div class="result-box"><div class="result-label">Rest RON</div><div class="result-val" id="res_b_ron">0 lei</div></div>
+      </div>
+      <div class="currency-block">
+        <div class="currency-title title-usd">🇺🇸 USD</div>
+        <span class="input-label">Sumă Programată:</span>
+        <input type="number" id="b_usd_prog" class="prog-input" placeholder="Ex: 50000">
+        <span class="input-label">Retrageri:</span>
+        <div class="withdrawal-inputs">
+          <input type="number" class="withdraw-input b-usd-w" placeholder="Retragere 1">
+          <input type="number" class="withdraw-input b-usd-w" placeholder="Retragere 2">
+          <input type="number" class="withdraw-input b-usd-w" placeholder="Retragere 3">
+        </div>
+        <div class="result-box"><div class="result-label">Rest USD</div><div class="result-val" id="res_b_usd">$0</div></div>
+      </div>
+      <div class="currency-block">
+        <div class="currency-title title-eur">🇪🇺 EUR</div>
+        <span class="input-label">Sumă Programată:</span>
+        <input type="number" id="b_eur_prog" class="prog-input" placeholder="Ex: 40000">
+        <span class="input-label">Retrageri:</span>
+        <div class="withdrawal-inputs">
+          <input type="number" class="withdraw-input b-eur-w" placeholder="Retragere 1">
+          <input type="number" class="withdraw-input b-eur-w" placeholder="Retragere 2">
+          <input type="number" class="withdraw-input b-eur-w" placeholder="Retragere 3">
+        </div>
+        <div class="result-box"><div class="result-label">Rest EUR</div><div class="result-val" id="res_b_eur">€0</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="action-btn-zone">
+    <button class="update-btn" onclick="saveAndCalculate()">🔄 Salvează</button>
+    <button class="clear-btn" onclick="clearPlanner()">❌ Șterge</button>
+  </div>
+  <div class="firebase-status" id="firebase-status">⏳ Se conectează...</div>
+</div>
+
+<!-- MESAGERIE INTERNA -->
+<div class="section-container" id="mesagerie">
+  <div class="section-title">Comunicare Puncte</div>
+
+  <div style="font-size:11px;font-weight:bold;color:#475569;text-transform:uppercase;margin-bottom:8px;">1. Alege punctul căruia îi trimiți:</div>
+  <div class="punct-grid" id="punctGrid">
+    <div class="punct-btn" onclick="selectPunct('Hermes','40763706387',this)">
+      <span class="punct-name">Hermes</span>
+      <span class="punct-tel">0763 706 387</span>
+    </div>
+    <div class="punct-btn" onclick="selectPunct('Centru','40786157928',this)">
+      <span class="punct-name">Centru</span>
+      <span class="punct-tel">0786 157 928</span>
+    </div>
+    <div class="punct-btn" onclick="selectPunct('Tic Tac','40760764377',this)">
+      <span class="punct-name">Tic Tac</span>
+      <span class="punct-tel">0760 764 377</span>
+    </div>
+    <div class="punct-btn" onclick="selectPunct('Bulevard','40783045102',this)">
+      <span class="punct-name">Bulevard</span>
+      <span class="punct-tel">0783 045 102</span>
+    </div>
+    <div class="punct-btn" onclick="selectPunct('Dedeman','40787575821',this)">
+      <span class="punct-name">Dedeman</span>
+      <span class="punct-tel">0787 575 821</span>
+    </div>
+    <div class="punct-btn" onclick="selectPunct('Lidl','40783074998',this)">
+      <span class="punct-name">Lidl</span>
+      <span class="punct-tel">0783 074 998</span>
+    </div>
+    <div class="punct-btn" onclick="selectPunct('Matei 1','40786157929',this)">
+      <span class="punct-name">Matei 1</span>
+      <span class="punct-tel">0786 157 929</span>
+    </div>
+    <div class="punct-btn" onclick="selectPunct('Matei Mese','40746232090',this)">
+      <span class="punct-name">Matei Mese</span>
+      <span class="punct-tel">0746 232 090</span>
+    </div>
+  </div>
+
+  <div class="msg-builder">
+    <div class="msg-builder-title">2. Construiește mesajul</div>
+
+    <!-- Tip mesaj -->
+    <div class="msg-field">
+      <span class="msg-field-label">Tip acțiune:</span>
+      <div class="tip-btns">
+        <div class="tip-btn" onclick="selectTip('REMITE',this)">📦 Remite</div>
+        <div class="tip-btn" onclick="selectTip('PREGĂTEȘTE',this)">⚙️ Pregătește</div>
+        <div class="tip-btn" onclick="selectTip('ALERTĂ CURS',this)">🚨 Alertă Curs</div>
+        <div class="tip-btn" onclick="selectTip('INFO',this)">💬 Info</div>
+      </div>
+    </div>
+
+    <!-- Destinație (pentru Remite) -->
+    <div class="msg-field" id="destField">
+      <span class="msg-field-label">Remite către:</span>
+      <select class="dest-select" id="destSelect" onchange="buildMsg()">
+        <option value="">— Alege punctul destinație —</option>
+        <option value="Hermes">Hermes</option>
+        <option value="Centru">Centru</option>
+        <option value="Tic Tac">Tic Tac</option>
+        <option value="Bulevard">Bulevard</option>
+        <option value="Dedeman">Dedeman</option>
+        <option value="Lidl">Lidl</option>
+        <option value="Matei 1">Matei 1</option>
+        <option value="Matei Mese">Matei Mese</option>
+      </select>
+    </div>
+
+    <!-- Suma -->
+    <div class="msg-field">
+      <span class="msg-field-label">Sumă:</span>
+      <div class="msg-row">
+        <input type="number" class="msg-input" id="msgSuma" placeholder="Ex: 20000" oninput="buildMsg()">
+      </div>
+    </div>
+
+    <!-- Valuta -->
+    <div class="msg-field">
+      <span class="msg-field-label">Valută:</span>
+      <div class="valuta-btns">
+        <div class="val-btn" onclick="selectVal('RON',this)">🇷🇴 RON</div>
+        <div class="val-btn" onclick="selectVal('EUR',this)">🇪🇺 EUR</div>
+        <div class="val-btn" onclick="selectVal('USD',this)">🇺🇸 USD</div>
+        <div class="val-btn" onclick="selectVal('GBP',this)">🇬🇧 GBP</div>
+        <div class="val-btn" onclick="selectVal('CHF',this)">🇨🇭 CHF</div>
+      </div>
+    </div>
+
+    <!-- Mesaj extra -->
+    <div class="msg-field">
+      <span class="msg-field-label">Mesaj extra (opțional):</span>
+      <input type="text" class="msg-input" id="msgExtra" placeholder="Ex: urgent, după ora 14..." oninput="buildMsg()" style="width:100%;">
+    </div>
+  </div>
+
+  <!-- Preview -->
+  <div class="msg-preview">
+    <div class="msg-preview-label">📋 PREVIZUALIZARE MESAJ</div>
+    <div class="msg-preview-text" id="msgPreview">Alege un punct și completează câmpurile...</div>
+  </div>
+
+  <!-- Buton WhatsApp -->
+  <button class="wa-send-btn wa-disabled" id="waSendBtn" onclick="sendWhatsApp()">
+    <span style="font-size:24px;">📱</span> Trimite pe WhatsApp
+  </button>
+</div>
+
+<!-- CONCURENTA -->
+<div class="section-container" id="concurenta">
+  <div class="section-title">Cursuri Concurență</div>
+  <div class="comp-group-title gt-exchange">🏪 Case de Schimb</div>
+  <div class="comp-card">
+    <div class="comp-card-left"><span class="comp-card-name">Optim Exchange</span><span class="comp-card-loc loc-vl">📍 Râmnicu Vâlcea</span></div>
+    <div class="comp-card-right"><a href="https://www.valutare.ro/curs/numar-telefon-adresa-optim-exchange.html" target="_blank" class="ext-btn btn-valutare">↗️ Valutare</a></div>
+  </div>
+  <div class="comp-card">
+    <div class="comp-card-left"><span class="comp-card-name">Family Exchange</span><span class="comp-card-loc loc-vl">📍 Ostroveni</span></div>
+    <div class="comp-card-right"><a href="https://www.valutare.ro/curs/numar-telefon-adresa-family-exchange-ostroveni-cina-luceafarului5-.html" target="_blank" class="ext-btn btn-valutare">↗️ Valutare</a></div>
+  </div>
+  <div class="comp-card">
+    <div class="comp-card-left"><span class="comp-card-name">Azad Exchange</span><span class="comp-card-loc loc-buc">📍 Buc. Unirii</span></div>
+    <div class="comp-card-right"><a href="https://www.valutare.ro/curs/numar-telefon-adresa-azad-exchange-srl-unirii.html" target="_blank" class="ext-btn btn-valutare">↗️ Valutare</a></div>
+  </div>
+  <div class="comp-card">
+    <div class="comp-card-left"><span class="comp-card-name">Holux București</span><span class="comp-card-loc loc-buc">📍 București</span></div>
+    <div class="comp-card-right"><a href="https://www.valutare.ro/curs/numar-telefon-adresa-Holux-bucuresti.html" target="_blank" class="ext-btn btn-valutare">↗️ Valutare</a></div>
+  </div>
+  <div class="comp-group-title gt-bank">🏦 Bănci</div>
+  <div class="comp-card">
+    <div class="comp-card-left"><span class="comp-card-name">CEC Bank</span><span class="comp-card-loc loc-bnk">🏦 Ghișeu</span></div>
+    <div class="comp-card-right">
+      <a href="https://www.cec.ro/curs-valutar" target="_blank" class="ext-btn btn-site">↗️ CEC.ro</a>
+      <a href="https://www.valutare.ro/curs/numar-telefon-adresa-cec.html" target="_blank" class="ext-btn btn-valutare">↗️ Valutare</a>
+    </div>
+  </div>
+  <div class="comp-card">
+    <div class="comp-card-left"><span class="comp-card-name">Exim Bank</span><span class="comp-card-loc loc-bnk">🏦 Ghișeu</span></div>
+    <div class="comp-card-right">
+      <a href="https://eximbank.ro/curs-valutar/" target="_blank" class="ext-btn btn-site">↗️ Exim.ro</a>
+      <a href="https://www.valutare.ro/curs/numar-telefon-adresa-exim.html" target="_blank" class="ext-btn btn-valutare">↗️ Valutare</a>
+    </div>
+  </div>
+</div>
+
+<!-- CALCULATOR -->
+<div class="section-container" id="calculator">
+  <div class="section-title">Calculator</div>
+  <div class="calc-tabs">
+    <div class="calc-tab active" onclick="switchCalc('calc1', this)">💱 Valută → RON</div>
+    <div class="calc-tab" onclick="switchCalc('calc2', this)">📊 Comision %</div>
+  </div>
+
+  <div class="calc-content active" id="calc1">
+    <div class="calc-row">
+      <div class="calc-row-top"><span class="calc-flag">🇬🇧</span><span class="calc-curr-name">LIRĂ GBP</span><span class="calc-result-inline" id="ron_gbp">— lei</span></div>
+      <div class="calc-inputs-row">
+        <div class="calc-input-group"><span class="calc-input-label">Curs GBP</span><input type="number" class="calc-input rate" id="rate_gbp" placeholder="6.05" step="0.001" oninput="calcRON('gbp')"></div>
+        <div class="calc-input-group"><span class="calc-input-label">Sumă GBP</span><input type="number" class="calc-input amount" id="amt_gbp" placeholder="1000" oninput="calcRON('gbp')"></div>
+      </div>
+    </div>
+    <div class="calc-row">
+      <div class="calc-row-top"><span class="calc-flag">🇪🇺</span><span class="calc-curr-name">EURO EUR</span><span class="calc-result-inline" id="ron_eur">— lei</span></div>
+      <div class="calc-inputs-row">
+        <div class="calc-input-group"><span class="calc-input-label">Curs EUR</span><input type="number" class="calc-input rate" id="rate_eur" placeholder="5.25" step="0.001" oninput="calcRON('eur')"></div>
+        <div class="calc-input-group"><span class="calc-input-label">Sumă EUR</span><input type="number" class="calc-input amount" id="amt_eur" placeholder="1000" oninput="calcRON('eur')"></div>
+      </div>
+    </div>
+    <div class="calc-row">
+      <div class="calc-row-top"><span class="calc-flag">🇨🇭</span><span class="calc-curr-name">FRANC CHF</span><span class="calc-result-inline" id="ron_chf">— lei</span></div>
+      <div class="calc-inputs-row">
+        <div class="calc-input-group"><span class="calc-input-label">Curs CHF</span><input type="number" class="calc-input rate" id="rate_chf" placeholder="5.70" step="0.001" oninput="calcRON('chf')"></div>
+        <div class="calc-input-group"><span class="calc-input-label">Sumă CHF</span><input type="number" class="calc-input amount" id="amt_chf" placeholder="1000" oninput="calcRON('chf')"></div>
+      </div>
+    </div>
+    <div class="calc-row">
+      <div class="calc-row-top"><span class="calc-flag">🇺🇸</span><span class="calc-curr-name">DOLAR USD</span><span class="calc-result-inline" id="ron_usd">— lei</span></div>
+      <div class="calc-inputs-row">
+        <div class="calc-input-group"><span class="calc-input-label">Curs USD</span><input type="number" class="calc-input rate" id="rate_usd" placeholder="4.55" step="0.001" oninput="calcRON('usd')"></div>
+        <div class="calc-input-group"><span class="calc-input-label">Sumă USD</span><input type="number" class="calc-input amount" id="amt_usd" placeholder="1000" oninput="calcRON('usd')"></div>
+      </div>
+    </div>
+    <div class="calc-total-box">
+      <div class="calc-total-label">💰 Total RON (toate valutele)</div>
+      <div class="calc-total-val" id="ron_total">0 lei</div>
+    </div>
+    <button class="calc-reset-btn" onclick="resetCalc1()">🗑️ Resetează</button>
+  </div>
+
+  <div class="calc-content" id="calc2">
+    <div class="com-global">
+      <div class="com-global-title">⚙️ Aplică același procent la toate</div>
+      <div class="com-global-row">
+        <input type="number" class="com-global-inp" id="global_pct" placeholder="ex: -0.35" step="0.01">
+        <button class="com-apply-btn" onclick="applyGlobalPct()">Aplică la toate</button>
+      </div>
+    </div>
+    <div class="com-row">
+      <div class="com-row-header"><span class="calc-flag">🇷🇴</span><span class="com-curr-name">LEI RON</span></div>
+      <div class="com-inputs">
+        <div class="com-input-group"><span class="com-inp-label">Sumă RON</span><input type="number" class="com-inp suma" id="csum_ron" placeholder="200000" oninput="calcCom('ron')"></div>
+        <div class="com-input-group"><span class="com-inp-label">Comision %</span><input type="number" class="com-inp pct" id="cpct_ron" placeholder="-0.35" step="0.01" oninput="calcCom('ron')"></div>
+      </div>
+      <div class="com-results">
+        <div class="com-res-box original"><div class="com-res-label">Inițial</div><div class="com-res-val gray" id="corig_ron">—</div></div>
+        <div class="com-res-box comision"><div class="com-res-label">Comision</div><div class="com-res-val red" id="ccom_ron">—</div></div>
+        <div class="com-res-box final"><div class="com-res-label">Rămâne</div><div class="com-res-val green" id="cfin_ron">—</div></div>
+      </div>
+    </div>
+    <div class="com-row">
+      <div class="com-row-header"><span class="calc-flag">🇬🇧</span><span class="com-curr-name">LIRĂ GBP</span></div>
+      <div class="com-inputs">
+        <div class="com-input-group"><span class="com-inp-label">Sumă GBP</span><input type="number" class="com-inp suma" id="csum_gbp" placeholder="5000" oninput="calcCom('gbp')"></div>
+        <div class="com-input-group"><span class="com-inp-label">Comision %</span><input type="number" class="com-inp pct" id="cpct_gbp" placeholder="-0.35" step="0.01" oninput="calcCom('gbp')"></div>
+      </div>
+      <div class="com-results">
+        <div class="com-res-box original"><div class="com-res-label">Inițial</div><div class="com-res-val gray" id="corig_gbp">—</div></div>
+        <div class="com-res-box comision"><div class="com-res-label">Comision</div><div class="com-res-val red" id="ccom_gbp">—</div></div>
+        <div class="com-res-box final"><div class="com-res-label">Rămâne</div><div class="com-res-val green" id="cfin_gbp">—</div></div>
+      </div>
+    </div>
+    <div class="com-row">
+      <div class="com-row-header"><span class="calc-flag">🇪🇺</span><span class="com-curr-name">EURO EUR</span></div>
+      <div class="com-inputs">
+        <div class="com-input-group"><span class="com-inp-label">Sumă EUR</span><input type="number" class="com-inp suma" id="csum_eur" placeholder="10000" oninput="calcCom('eur')"></div>
+        <div class="com-input-group"><span class="com-inp-label">Comision %</span><input type="number" class="com-inp pct" id="cpct_eur" placeholder="-0.35" step="0.01" oninput="calcCom('eur')"></div>
+      </div>
+      <div class="com-results">
+        <div class="com-res-box original"><div class="com-res-label">Inițial</div><div class="com-res-val gray" id="corig_eur">—</div></div>
+        <div class="com-res-box comision"><div class="com-res-label">Comision</div><div class="com-res-val red" id="ccom_eur">—</div></div>
+        <div class="com-res-box final"><div class="com-res-label">Rămâne</div><div class="com-res-val green" id="cfin_eur">—</div></div>
+      </div>
+    </div>
+    <div class="com-row">
+      <div class="com-row-header"><span class="calc-flag">🇨🇭</span><span class="com-curr-name">FRANC CHF</span></div>
+      <div class="com-inputs">
+        <div class="com-input-group"><span class="com-inp-label">Sumă CHF</span><input type="number" class="com-inp suma" id="csum_chf" placeholder="5000" oninput="calcCom('chf')"></div>
+        <div class="com-input-group"><span class="com-inp-label">Comision %</span><input type="number" class="com-inp pct" id="cpct_chf" placeholder="-0.35" step="0.01" oninput="calcCom('chf')"></div>
+      </div>
+      <div class="com-results">
+        <div class="com-res-box original"><div class="com-res-label">Inițial</div><div class="com-res-val gray" id="corig_chf">—</div></div>
+        <div class="com-res-box comision"><div class="com-res-label">Comision</div><div class="com-res-val red" id="ccom_chf">—</div></div>
+        <div class="com-res-box final"><div class="com-res-label">Rămâne</div><div class="com-res-val green" id="cfin_chf">—</div></div>
+      </div>
+    </div>
+    <div class="com-row">
+      <div class="com-row-header"><span class="calc-flag">🇺🇸</span><span class="com-curr-name">DOLAR USD</span></div>
+      <div class="com-inputs">
+        <div class="com-input-group"><span class="com-inp-label">Sumă USD</span><input type="number" class="com-inp suma" id="csum_usd" placeholder="5000" oninput="calcCom('usd')"></div>
+        <div class="com-input-group"><span class="com-inp-label">Comision %</span><input type="number" class="com-inp pct" id="cpct_usd" placeholder="-0.35" step="0.01" oninput="calcCom('usd')"></div>
+      </div>
+      <div class="com-results">
+        <div class="com-res-box original"><div class="com-res-label">Inițial</div><div class="com-res-val gray" id="corig_usd">—</div></div>
+        <div class="com-res-box comision"><div class="com-res-label">Comision</div><div class="com-res-val red" id="ccom_usd">—</div></div>
+        <div class="com-res-box final"><div class="com-res-label">Rămâne</div><div class="com-res-val green" id="cfin_usd">—</div></div>
+      </div>
+    </div>
+    <button class="calc-reset-btn" onclick="resetCalc2()">🗑️ Resetează</button>
+  </div>
+</div>
+
+<!-- GRAFICE -->
+<div class="section-container" id="forex">
+  <div class="section-title">Variații Live RON</div>
+  <div class="ticker-label">🇬🇧 GBP / RON</div>
+  <div class="ticker-wrap"><div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>{"symbol":"FX_IDC:GBPRON","width":"100%","colorTheme":"light","isTransparent":true,"locale":"en"}</script></div></div>
+  <div class="ticker-label">🇪🇺 EUR / RON</div>
+  <div class="ticker-wrap"><div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>{"symbol":"FX_IDC:EURRON","width":"100%","colorTheme":"light","isTransparent":true,"locale":"en"}</script></div></div>
+  <div class="ticker-label">🇨🇭 CHF / RON</div>
+  <div class="ticker-wrap"><div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>{"symbol":"FX_IDC:CHFRON","width":"100%","colorTheme":"light","isTransparent":true,"locale":"en"}</script></div></div>
+  <div class="ticker-label">🇺🇸 USD / RON</div>
+  <div class="ticker-wrap"><div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>{"symbol":"FX_IDC:USDRON","width":"100%","colorTheme":"light","isTransparent":true,"locale":"en"}</script></div></div>
+  <div class="ticker-label">🇭🇺 HUF / RON</div>
+  <div class="ticker-wrap"><div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>{"symbol":"FX_IDC:HUFRON","width":"100%","colorTheme":"light","isTransparent":true,"locale":"en"}</script></div></div>
+  <div style="height:12px;"></div>
+  <div class="chart-title">📊 GBP / RON (15 Min)</div>
+  <div class="widget-box"><iframe src="https://s.tradingview.com/widgetembed/?frameElementId=tv1&symbol=FX_IDC%3AGBPRON&interval=15&theme=light&style=1&timezone=Europe%2FBucharest" allowtransparency="true"></iframe></div>
+  <div class="chart-title">📊 EUR / RON (15 Min)</div>
+  <div class="widget-box"><iframe src="https://s.tradingview.com/widgetembed/?frameElementId=tv2&symbol=FX_IDC%3AEURRON&interval=15&theme=light&style=1&timezone=Europe%2FBucharest" allowtransparency="true"></iframe></div>
+  <div class="chart-title">📊 CHF / RON (15 Min)</div>
+  <div class="widget-box"><iframe src="https://s.tradingview.com/widgetembed/?frameElementId=tv3&symbol=FX_IDC%3ACHFRON&interval=15&theme=light&style=1&timezone=Europe%2FBucharest" allowtransparency="true"></iframe></div>
+  <div class="chart-title">📊 USD / RON (15 Min)</div>
+  <div class="widget-box"><iframe src="https://s.tradingview.com/widgetembed/?frameElementId=tv4&symbol=FX_IDC%3AUSDRON&interval=15&theme=light&style=1&timezone=Europe%2FBucharest" allowtransparency="true"></iframe></div>
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  const app = initializeApp({
+    apiKey: "AIzaSyCN9eB_0D2VZbCSrTnBk-mDTVPIjSCr3hA",
+    authDomain: "licitatii-schimb.firebaseapp.com",
+    databaseURL: "https://licitatii-schimb-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "licitatii-schimb",
+    storageBucket: "licitatii-schimb.firebasestorage.app",
+    messagingSenderId: "206650424464",
+    appId: "1:206650424464:web:c214f70fc3e2d4acacac15"
+  });
+  const db = getDatabase(app);
+  const dbRef = ref(db, "comanda/programari");
+  function getFormData() {
+    const d = {};
+    ["s_ron_prog","s_usd_prog","s_eur_prog","b_ron_prog","b_usd_prog","b_eur_prog"].forEach(id => { d[id] = document.getElementById(id).value || ""; });
+    ["s-ron-w","s-usd-w","s-eur-w","b-ron-w","b-usd-w","b-eur-w"].forEach(cls => { d[cls] = Array.from(document.querySelectorAll("." + cls)).map(i => i.value || ""); });
+    return d;
+  }
+  function applyFormData(d) {
+    ["s_ron_prog","s_usd_prog","s_eur_prog","b_ron_prog","b_usd_prog","b_eur_prog"].forEach(id => { if (d[id] !== undefined) document.getElementById(id).value = d[id]; });
+    ["s-ron-w","s-usd-w","s-eur-w","b-ron-w","b-usd-w","b-eur-w"].forEach(cls => {
+      if (d[cls]) document.querySelectorAll("." + cls).forEach((inp, i) => { if (d[cls][i] !== undefined) inp.value = d[cls][i]; });
+    });
+    executeMath(d);
+  }
+  window.saveAndCalculate = async function() {
+    const d = getFormData();
+    try { await set(dbRef, d); document.getElementById("firebase-status").innerText = "✅ Salvat la " + new Date().toLocaleTimeString("ro-RO"); }
+    catch(e) { document.getElementById("firebase-status").innerText = "❌ " + e.message; }
+    executeMath(d);
+  };
+  window.clearPlanner = async function() {
+    if (confirm("Ștergi toate datele?")) {
+      await set(dbRef, {});
+      document.querySelectorAll(".prog-input,.withdraw-input").forEach(i => i.value = "");
+      executeMath({});
+      document.getElementById("firebase-status").innerText = "✅ Șters";
+    }
+  };
+  try {
+    const snap = await get(dbRef);
+    if (snap.exists()) { applyFormData(snap.val()); document.getElementById("firebase-status").innerText = "✅ Date încărcate"; }
+    else { document.getElementById("firebase-status").innerText = "✅ Firebase conectat"; }
+  } catch(e) { document.getElementById("firebase-status").innerText = "❌ " + e.message; }
+</script>
+
+<script>
+  // ===== NAVIGARE =====
+  function switchTab(id, el) {
+    document.querySelectorAll(".section-container").forEach(s => s.style.display = "none");
+    document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById(id).style.display = "block";
+    el.classList.add("active");
+    window.scrollTo({top:0, behavior:"smooth"});
+  }
+  function switchCalc(id, el) {
+    document.querySelectorAll(".calc-content").forEach(c => c.classList.remove("active"));
+    document.querySelectorAll(".calc-tab").forEach(b => b.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    el.classList.add("active");
+  }
+
+  // ===== MESAGERIE =====
+  let selectedPunct = null;
+  let selectedPhone = null;
+  let selectedTip = null;
+  let selectedVal = null;
+
+  function selectPunct(name, phone, el) {
+    document.querySelectorAll(".punct-btn").forEach(b => b.classList.remove("selected"));
+    el.classList.add("selected");
+    selectedPunct = name;
+    selectedPhone = phone;
+    buildMsg();
+  }
+
+  function selectTip(tip, el) {
+    document.querySelectorAll(".tip-btn").forEach(b => b.classList.remove("selected"));
+    el.classList.add("selected");
+    selectedTip = tip;
+    // Arată/ascunde câmpul destinație
+    document.getElementById("destField").style.display = tip === "REMITE" ? "block" : "none";
+    buildMsg();
+  }
+
+  function selectVal(val, el) {
+    document.querySelectorAll(".val-btn").forEach(b => b.classList.remove("selected"));
+    el.classList.add("selected");
+    selectedVal = val;
+    buildMsg();
+  }
+
+  function buildMsg() {
+    if (!selectedPunct || !selectedTip) {
+      document.getElementById("msgPreview").innerText = "Alege un punct și tipul de acțiune...";
+      document.getElementById("waSendBtn").classList.add("wa-disabled");
+      return;
+    }
+
+    const suma = document.getElementById("msgSuma").value;
+    const dest = document.getElementById("destSelect").value;
+    const extra = document.getElementById("msgExtra").value;
+    const val = selectedVal || "";
+
+    let msg = "";
+
+    if (selectedTip === "REMITE") {
+      msg = `📦 REMITE`;
+      if (dest) msg += ` → ${dest}`;
+      if (suma) msg += `\n💰 Sumă: ${Number(suma).toLocaleString("ro-RO")} ${val}`;
+      if (extra) msg += `\n📝 ${extra}`;
+    } else if (selectedTip === "PREGĂTEȘTE") {
+      msg = `⚙️ PREGĂTEȘTE`;
+      if (suma) msg += `\n💰 Sumă: ${Number(suma).toLocaleString("ro-RO")} ${val}`;
+      if (extra) msg += `\n📝 ${extra}`;
+    } else if (selectedTip === "ALERTĂ CURS") {
+      msg = `🚨 ALERTĂ CURS`;
+      if (val) msg += ` ${val}`;
+      if (suma) msg += `\n📊 Nivel: ${suma}`;
+      if (extra) msg += `\n📝 ${extra}`;
+    } else if (selectedTip === "INFO") {
+      msg = `💬 INFO`;
+      if (extra) msg += `\n${extra}`;
+    }
+
+    msg += `\n\n— Trimis din Comanda Totală`;
+
+    document.getElementById("msgPreview").innerText = msg;
+
+    const canSend = selectedPunct && selectedTip;
+    if (canSend) {
+      document.getElementById("waSendBtn").classList.remove("wa-disabled");
+    }
+  }
+
+  function sendWhatsApp() {
+    if (!selectedPhone) return;
+    const msg = document.getElementById("msgPreview").innerText;
+    const encoded = encodeURIComponent(msg);
+    window.open(`https://wa.me/${selectedPhone}?text=${encoded}`, "_blank");
+  }
+
+  // ===== CALCULATOR 1 =====
+  function calcRON(curr) {
+    const rate = parseFloat(document.getElementById("rate_" + curr).value) || 0;
+    const amt = parseFloat(document.getElementById("amt_" + curr).value) || 0;
+    const result = rate * amt;
+    document.getElementById("ron_" + curr).innerText = result > 0
+      ? result.toLocaleString("ro-RO", {minimumFractionDigits:2, maximumFractionDigits:2}) + " lei" : "— lei";
+    updateTotal();
+  }
+  function updateTotal() {
+    const total = ["eur","usd","gbp","chf"].reduce((s, c) => {
+      return s + (parseFloat(document.getElementById("rate_"+c).value)||0) * (parseFloat(document.getElementById("amt_"+c).value)||0);
+    }, 0);
+    document.getElementById("ron_total").innerText = total.toLocaleString("ro-RO", {minimumFractionDigits:2, maximumFractionDigits:2}) + " lei";
+  }
+  function resetCalc1() {
+    ["eur","usd","gbp","chf"].forEach(c => {
+      document.getElementById("rate_"+c).value = "";
+      document.getElementById("amt_"+c).value = "";
+      document.getElementById("ron_"+c).innerText = "— lei";
+    });
+    document.getElementById("ron_total").innerText = "0 lei";
+  }
+
+  // ===== CALCULATOR 2 - COMISION =====
+  const SYMS = { ron: " lei", eur: " €", usd: " $", gbp: " £", chf: " CHF" };
+  function calcCom(curr) {
+    const suma = parseFloat(document.getElementById("csum_" + curr).value) || 0;
+    const pct = parseFloat(document.getElementById("cpct_" + curr).value) || 0;
+    const sym = SYMS[curr];
+    if (suma === 0) {
+      ["corig","ccom","cfin"].forEach(p => document.getElementById(p+"_"+curr).innerText = "—");
+      return;
+    }
+    const comision = suma * (pct / 100);
+    const final = suma + comision;
+    const fmt = v => Math.abs(v).toLocaleString("ro-RO", {minimumFractionDigits:2, maximumFractionDigits:2}) + sym;
+    document.getElementById("corig_" + curr).innerText = fmt(suma);
+    document.getElementById("ccom_" + curr).innerText = (pct < 0 ? "-" : "+") + fmt(comision);
+    document.getElementById("cfin_" + curr).innerText = fmt(final);
+  }
+  function applyGlobalPct() {
+    const pct = document.getElementById("global_pct").value;
+    if (!pct) return;
+    ["ron","gbp","eur","chf","usd"].forEach(c => {
+      document.getElementById("cpct_" + c).value = pct;
+      calcCom(c);
+    });
+  }
+  function resetCalc2() {
+    ["ron","gbp","eur","chf","usd"].forEach(c => {
+      document.getElementById("csum_"+c).value = "";
+      document.getElementById("cpct_"+c).value = "";
+      ["corig","ccom","cfin"].forEach(p => document.getElementById(p+"_"+c).innerText = "—");
+    });
+    document.getElementById("global_pct").value = "";
+  }
+
+  // ===== PLANNER MATH =====
+  function executeMath(d) {
+    function sum(arr) { return (arr||[]).reduce((a,v) => a+(parseFloat(v)||0), 0); }
+    upd("res_s_ron",(parseFloat(d["s_ron_prog"])||0)-sum(d["s-ron-w"])," lei");
+    upd("res_s_usd",(parseFloat(d["s_usd_prog"])||0)-sum(d["s-usd-w"])," $");
+    upd("res_s_eur",(parseFloat(d["s_eur_prog"])||0)-sum(d["s-eur-w"])," €");
+    upd("res_b_ron",(parseFloat(d["b_ron_prog"])||0)-sum(d["b-ron-w"])," lei");
+    upd("res_b_usd",(parseFloat(d["b_usd_prog"])||0)-sum(d["b-usd-w"])," $");
+    upd("res_b_eur",(parseFloat(d["b_eur_prog"])||0)-sum(d["b-eur-w"])," €");
+  }
+  function upd(id, val, sym) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerText = val.toLocaleString("ro-RO") + sym;
+    val < 0 ? el.classList.add("low") : el.classList.remove("low");
+  }
+
+  // Ascunde destinatie initial
+  document.getElementById("destField").style.display = "none";
+  setInterval(() => { document.getElementById("liveClock").innerText = new Date().toLocaleTimeString("ro-RO"); }, 1000);
+</script>
+</body>
+</html>
