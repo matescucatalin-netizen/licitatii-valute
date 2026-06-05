@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesaje Rapide Casă Schimb</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            max-width: 450px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin: 0 auto;
+        }
+        h2 {
+            text-align: center;
+            color: #075E54;
+            margin-top: 0;
+            font-size: 22px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin: 15px 0 5px;
+        }
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .radio-option {
+            background: #eef7f4;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #d1e7dd;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .radio-option input {
+            width: auto;
+            margin-right: 10px;
+        }
+        button {
+            width: 100%;
+            background-color: #25D366;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        button:hover {
+            background-color: #20ba5a;
+        }
+        .flex-row {
+            display: flex;
+            gap: 10px;
+        }
+        .flex-row div {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Trimitere Mesaj Rapid</h2>
+
+    <label>Selectează Acțiunea:</label>
+    <div class="radio-group">
+        <label class="radio-option">
+            <input type="radio" name="tip_mesaj" value="Remite" id="radio_remite" checked onclick="toggleSectiune()"> Remite
+        </label>
+        <label class="radio-option">
+            <input type="radio" name="tip_mesaj" value="Pregateste" id="radio_pregateste" onclick="toggleSectiune()"> Pregătește
+        </label>
+        <label class="radio-option">
+            <input type="radio" name="tip_mesaj" value="Alerta" id="radio_alerta" onclick="toggleSectiune()"> Alertă curs 🚨
+        </label>
+    </div>
+
+    <label for="destinatie">Trimite către (Destinație):</label>
+    <select id="destinatie" onchange="salveazaDate()">
+        <optgroup label="--- BĂNCI ---">
+            <option value="Hermes">Hermes</option>
+            <option value="Exim">Exim</option>
+        </optgroup>
+        <optgroup label="--- LOCAȚII / CENTRE ---">
+            <option value="Centru">Centru</option>
+            <option value="Locația 1">Locația 1</option>
+            <option value="Locația 2">Locația 2</option>
+            <option value="Locația 3">Locația 3</option>
+            <option value="Locația 4">Locația 4</option>
+            <option value="Locația 5">Locația 5</option>
+            <option value="Locația 6">Locația 6</option>
+            <option value="Locația 7">Locația 7</option>
+            <option value="Locația 8">Locația 8</option>
+        </optgroup>
+    </select>
+
+    <div id="sectiune_bani">
+        <div class="flex-row">
+            <div>
+                <label for="suma">Sumă:</label>
+                <input type="number" id="suma" placeholder="0.00" oninput="salveazaDate()">
+            </div>
+            <div>
+                <label for="valuta">Valută:</label>
+                <select id="valuta" onchange="salveazaDate()">
+                    <option value="RON">RON</option>
+                    <option value="EUR">EUR</option>
+                    <option value="USD">USD</option>
+                    <option value="GBP">GBP</option>
+                    <option value="CHF">CHF</option>
+                    <option value="CAD">CAD</option>
+                    <option value="AUD">AUD</option>
+                    <option value="HUF">HUF</option>
+                    <option value="BGN">BGN</option>
+                    <option value="TRY">TRY</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <button onclick="trimiteMesaj()">
+        💬 Deschide WhatsApp Direct
+    </button>
+</div>
+
+<script>
+    // 🚨 AGENDA TA PERMANENTĂ: Pune numerele de telefon reale aici (cu 40 în față)
+    const agendaTelefoane = {
+        "Hermes": "407XXXXXXXX",    // Pune numărul lui Hermes
+        "Exim": "407XXXXXXXX",      // Pune numărul lui Exim
+        "Centru": "407XXXXXXXX",    // Pune numărul de la Centru
+        "Locația 1": "407XXXXXXXX",
+        "Locația 2": "407XXXXXXXX",
+        "Locația 3": "407XXXXXXXX",
+        "Locația 4": "407XXXXXXXX",
+        "Locația 5": "407XXXXXXXX",
+        "Locația 6": "407XXXXXXXX",
+        "Locația 7": "407XXXXXXXX",
+        "Locația 8": "407XXXXXXXX"
+    };
+
+    window.onload = function() {
+        incarcaDateSalvate();
+    };
+
+    function salveazaDate() {
+        localStorage.setItem('destinatie', document.getElementById('destinatie').value);
+        localStorage.setItem('suma', document.getElementById('suma').value);
+        localStorage.setItem('valuta', document.getElementById('valuta').value);
+    }
+
+    function toggleSectiune() {
+        const tipMesaj = document.querySelector('input[name="tip_mesaj"]:checked').value;
+        localStorage.setItem('tip_mesaj', tipMesaj);
+        
+        const sectiuneBani = document.getElementById('sectiune_bani');
+        if (tipMesaj === 'Alerta') {
+            sectiuneBani.style.display = 'none';
+        } else {
+            sectiuneBani.style.display = 'block';
+        }
+    }
+
+    function incarcaDateSalvate() {
+        const tipSalvat = localStorage.getItem('tip_mesaj') || 'Remite';
+        if(tipSalvat === 'Remite') document.getElementById('radio_remite').checked = true;
+        if(tipSalvat === 'Pregateste') document.getElementById('radio_pregateste').checked = true;
+        if(tipSalvat === 'Alerta') document.getElementById('radio_alerta').checked = true;
+
+        if(localStorage.getItem('destinatie')) document.getElementById('destinatie').value = localStorage.getItem('destinatie');
+        if(localStorage.getItem('suma')) document.getElementById('suma').value = localStorage.getItem('suma');
+        if(localStorage.getItem('valuta')) document.getElementById('valuta').value = localStorage.getItem('valuta');
+
+        toggleSectiune();
+    }
+
+    function trimiteMesaj() {
+        const tipMesaj = document.querySelector('input[name="tip_mesaj"]:checked').value;
+        const destinatie = document.getElementById('destinatie').value;
+        let textMesaj = "";
+
+        // Preluăm numărul din agendă pe baza destinației selectate
+        const numarTelefon = agendaTelefoane[destinatie] || "";
+
+        if (tipMesaj === 'Alerta') {
+            textMesaj = "🚨 *Alertă curs!*";
+        } else {
+            const suma = document.getElementById('suma').value;
+            const valuta = document.getElementById('valuta').value;
+
+            if(!suma) { alert("Te rog introdu suma!"); return; }
+
+            if (tipMesaj === 'Remite') {
+                textMesaj = `🏢 *Remitere*\n\n` +
+                            `• *Către:* ${destinatie}\n` +
+                            `• *Sumă:* ${suma}\n` +
+                            `• *Valută:* ${valuta}\n\n` +
+                            `Am trimis remiterea.`;
+            } else if (tipMesaj === 'Pregateste') {
+                textMesaj = `💰 *Pregătește sumă*\n\n` +
+                            `• *Locație:* ${destinatie}\n` +
+                            `• *Sumă:* ${suma}\n` +
+                            `• *Valută:* ${valuta}\n\n` +
+                            `Te rog să pregătești această sumă.`;
+            }
+        }
+
+        // Generare link WhatsApp
+        let urlWhatsApp = "";
+        if(numarTelefon && numarTelefon !== "407XXXXXXXX") {
+            // Deschide direct conversația cu punctul selectat (Hermes, Exim, etc.)
+            urlWhatsApp = `https://api.whatsapp.com/send?phone=${numarTelefon}&text=` + encodeURIComponent(textMesaj);
+        } else {
+            // Dacă nu e setat numărul, te lasă să alegi tu din listă în WhatsApp
+            urlWhatsApp = "https://api.whatsapp.com/send?text=" + encodeURIComponent(textMesaj);
+        }
+        
+        window.open(urlWhatsApp, '_blank');
+    }
+</script>
+
+</body>
+</html>
