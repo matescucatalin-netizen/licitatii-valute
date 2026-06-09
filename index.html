@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Comandă Totală Mobilă</title>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Oswald', sans-serif; }
+    body { background: #f1f5f9; color: #0f172a; padding: 4px; font-size: 12px; }
+    .header { padding-bottom: 4px; border-bottom: 2px solid #cbd5e1; margin-bottom: 6px; }
+    .title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: #0284c7; text-align: center; }
+    .status-bar { display: flex; justify-content: space-between; align-items: center; }
+    .clock { font-size: 11px; color: #64748b; font-weight: bold; }
+    .alert-zone { font-size: 9px; color: #15803d; background: #dcfce7; padding: 1px 4px; border-radius: 4px; font-weight: bold; }
+    
+    .fast-nav { display: flex; gap: 2px; margin-bottom: 6px; }
+    .nav-btn { flex: 1; background: #e2e8f0; border: 1px solid #cbd5e1; color: #475569; text-align: center; padding: 4px 1px; border-radius: 4px; font-size: 9px; font-weight: bold; text-transform: uppercase; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .nav-btn.active { background: #0284c7; border-color: #0284c7; color: #fff; }
+    
+    .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: #b45309; margin-bottom: 4px; border-left: 3px solid #b45309; padding-left: 6px; }
+    .section-container { display: none; background: #fff; padding: 4px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 6px; }
+
+    /* PLANNER COMPACT */
+    .planner-grid { display: flex; gap: 4px; }
+    .planner-col { flex: 1; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; padding: 3px; }
+    .col-header { font-family: 'Bebas Neue', sans-serif; font-size: 15px; text-align: center; margin-bottom: 4px; padding: 1px; border-radius: 3px; }
+    .col-sermirav { background: #2563eb; color: #fff; }
+    .col-seba { background: #7c3aed; color: #fff; }
+    .currency-block { background: #fff; border: 1px solid #cbd5e1; border-radius: 4px; padding: 4px; margin-bottom: 4px; }
+    .currency-title { font-size: 11px; font-weight: bold; text-align: center; margin-bottom: 3px; border-bottom: 1px dashed #cbd5e1; }
+    .title-ron { color: #b45309; } .title-usd { color: #0284c7; } .title-eur { color: #16a34a; }
+    .input-label { font-size: 8px; color: #475569; font-weight: bold; text-transform: uppercase; }
+    .prog-input { width: 100%; background: #fff5f5; border: 1px solid #dc2626; color: #b91c1c; padding: 3px; border-radius: 3px; font-size: 12px; text-align: center; font-weight: bold; margin-bottom: 3px; }
+    .withdrawal-inputs { display: flex; flex-direction: column; gap: 2px; }
+    .withdraw-input { width: 100%; background: #fff; border: 1px solid #94a3b8; padding: 2px; border-radius: 3px; font-size: 11px; text-align: center; font-weight: bold; }
+    .result-box { margin-top: 3px; background: #f1f5f9; padding: 2px; border-radius: 3px; text-align: center; border: 1px solid #cbd5e1; }
+    .result-label { font-size: 8px; color: #475569; font-weight: bold; }
+    .result-val { font-size: 12px; font-weight: 700; color: #16a34a; }
+    .result-val.low { color: #dc2626; }
+    .action-btn-zone { display: flex; gap: 4px; margin-top: 4px; }
+    .update-btn { flex: 2; background: #16a34a; color: #fff; border: none; font-family: 'Bebas Neue', sans-serif; font-size: 15px; padding: 4px; border-radius: 4px; }
+    .clear-btn { flex: 1; background: #64748b; color: #fff; border: none; font-family: 'Bebas Neue', sans-serif; font-size: 15px; padding: 4px; border-radius: 4px; }
+
+    /* SECȚIUNE PUNCTE DE LUCRU - ULTRA RESTRÂNSĂ PENTRU O MÂNĂ */
+    .wa-title-color { color: #16a34a; border-left-color: #16a34a; }
+    .wa-list { display: flex; flex-direction: column; gap: 2px; }
+    .wa-item { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; padding: 3px; display: flex; flex-direction: column; gap: 2px; }
+    
+    .wa-row-main { display: flex; align-items: center; gap: 3px; }
+    .wa-name-box { width: 75px; font-size: 12px; font-weight: bold; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .wa-btn-call { background: #0284c7; color: #fff; border: none; border-radius: 4px; width: 26px; height: 24px; font-size: 12px; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+    .wa-inp-amount { flex: 1; min-width: 50px; padding: 3px; border: 1px solid #16a34a; border-radius: 3px; font-size: 12px; font-weight: bold; text-align: center; background: #f0fdf4; }
+    
+    .wa-row-selectors { display: flex; gap: 2px; }
+    .wa-sel { flex: 1; padding: 3px; border: 1px solid #94a3b8; border-radius: 3px; font-size: 11px; font-weight: bold; background: #fff; color: #334155; height: 24px; }
+    .sel-dest { border-color: #b45309; color: #b45309; background: #fffbeb; }
+    .sel-curr { border-color: #0284c7; color: #0284c7; background: #f0f9ff; max-width: 65px; }
+    .sel-action { border-color: #7c3aed; color: #7c3aed; background: #faf5ff; }
+
+    .wa-row-action { display: flex; gap: 2px; align-items: center; }
+    .wa-sel-time { flex: 1; padding: 3px; border: 1px solid #64748b; border-radius: 3px; font-size: 11px; font-weight: bold; height: 24px; }
+    .wa-btn-send { background: #25d366; color: #fff; border: none; border-radius: 4px; height: 24px; padding: 0 8px; font-weight: bold; font-size: 11px; display: flex; align-items: center; gap: 2px; justify-content: center; min-width: 50px; }
+
+    /* RESTUL INTERFETEI */
+    .comp-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 4px; margin-bottom: 2px; display: flex; justify-content: space-between; align-items: center; }
+    .ext-btn { padding: 3px 6px; border-radius: 4px; font-family: 'Bebas Neue', sans-serif; font-size: 12px; text-decoration: none; color: #fff; }
+    .btn-valutare { background: #0284c7; } .btn-site { background: #16a34a; }
+    .calc-row { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 4px; margin-bottom: 3px; }
+    .calc-inputs-row { display: flex; gap: 3px; }
+    .calc-input { width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; text-align: center; font-weight: bold; }
+    .widget-box { background: #fff; border: 1px solid #cbd5e1; border-radius: 4px; height: 280px; margin-bottom: 4px; }
+    .widget-box iframe { width: 100%; height: 100%; border: none; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="title">🎛️ COMANDA TOTALĂ MOBILĂ</div>
+  <div class="status-bar">
+    <div class="clock" id="liveClock">--:--:--</div>
+    <div class="alert-zone">⚡ LIVE V2</div>
+  </div>
+</div>
+
+<div class="fast-nav">
+  <div class="nav-btn active" onclick="switchTab('whatsapp-sectiune', this)">📱<br>Puncte</div>
+  <div class="nav-btn" onclick="switchTab('banci-sectiune', this)">📅<br>Gestiune</div>
+  <div class="nav-btn" onclick="switchTab('concurenta', this)">👑<br>Cursuri</div>
+  <div class="nav-btn" onclick="switchTab('calculator', this)">🧮<br>Calc</div>
+  <div class="nav-btn" onclick="switchTab('forex', this)">📈<br>Grafic</div>
+</div>
+
+<!-- SECTIUNE PUNCTE DE LUCRU (WHATSAPP & APEL RAPID) -->
+<div class="section-container" id="whatsapp-sectiune" style="display:block;">
+  <div class="section-title wa-title-color">📱 Panou Puncte de Lucru</div>
+  <div class="wa-list" id="wa-points-container">
+    <!-- Generat dinamic prin JS pentru compactare maximă și asocieri de telefoane -->
+  </div>
+</div>
+
+<!-- PLANNER (GESTIUNE) -->
+<div class="section-container" id="banci-sectiune">
+  <div class="section-title">Panou Gestiune Programări</div>
+  <div class="planner-grid">
+    <!-- Partea de Gestiune Sermirav / Seba rămâne intactă ca în varianta aprobată -->
+    <div class="planner-col">
+      <div class="col-header col-sermirav">SERMIRAV</div>
+      <div class="currency-block">
+        <div class="currency-title title-ron">🇷🇴 RON</div>
+        <input type="number" id="s_ron_prog" class="prog-input" placeholder="Programat">
+        <div class="withdrawal-inputs">
+          <input type="number" class="withdraw-input s-ron-w" placeholder="W1"><input type="number" class="withdraw-input s-ron-w" placeholder="W2"><input type="number" class="withdraw-input s-ron-w" placeholder="W3">
+        </div>
+        <div class="result-box"><div class="result-val" id="res_s_ron">0 lei</div></div>
+      </div>
+    </div>
+    <div class="planner-col">
+      <div class="col-header col-seba">SEBA</div>
+      <div class="currency-block">
+        <div class="currency-title title-ron">🇷🇴 RON</div>
+        <input type="number" id="b_ron_prog" class="prog-input" placeholder="Programat">
+        <div class="withdrawal-inputs">
+          <input type="number" class="withdraw-input b-ron-w" placeholder="W1"><input type="number" class="withdraw-input b-ron-w" placeholder="W2"><input type="number" class="withdraw-input b-ron-w" placeholder="W3">
+        </div>
+        <div class="result-box"><div class="result-val" id="res_b_ron">0 lei</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="action-btn-zone">
+    <button class="update-btn" onclick="saveAndCalculate()">🔄 Salvează</button>
+  </div>
+</div>
+
+<!-- CONCURENTA -->
+<div class="section-container" id="concurenta">
+  <div class="section-title">Cursuri Concurență</div>
+  <div class="comp-card"><span>Optim Exchange</span><a href="https://www.valutare.ro/curs/numar-telefon-adresa-optim-exchange.html" target="_blank" class="ext-btn btn-valutare">↗️ Curs</a></div>
+  <div class="comp-card"><span>Family Ostroveni</span><a href="https://www.valutare.ro/curs/numar-telefon-adresa-family-exchange-ostroveni-cina-luceafarului5-.html" target="_blank" class="ext-btn btn-valutare">↗️ Curs</a></div>
+  <div class="comp-card"><span>CEC Bank</span><a href="https://www.cec.ro/curs-valutar" target="_blank" class="ext-btn btn-site">↗️ CEC</a></div>
+</div>
+
+<!-- CALCULATOR -->
+<div class="section-container" id="calculator">
+  <div class="section-title">Calculator Rapid</div>
+  <div class="calc-row">
+    <div class="calc-inputs-row">
+      <input type="number" class="calc-input" id="rate_eur" placeholder="Curs EUR" oninput="calcCompact()">
+      <input type="number" class="calc-input" id="amt_eur" placeholder="Sumă EUR" oninput="calcCompact()">
+    </div>
+    <div style="text-align:center; font-weight:bold; margin-top:2px; color:#16a34a;" id="res_compact">0.00 lei</div>
+  </div>
+</div>
+
+<!-- GRAFICE -->
+<div class="section-container" id="forex">
+  <div class="widget-box"><iframe src="https://s.tradingview.com/widgetembed/?symbol=FX_IDC%3AGBPRON&interval=15&theme=light"></iframe></div>
+</div>
+
+<script>
+  // DATELE EXACTE ALE PUNCTELOR TALE DE LUCRU
+  const puncteLucru = [
+    { name: "Hermes", phone: "0763706387", type: "punct" },
+    { name: "Centru", phone: "0786157928", type: "punct" },
+    { name: "Tic Tac", phone: "0760764377", type: "punct" },
+    { name: "Bulevard", phone: "0783045102", type: "punct" },
+    { name: "Dedeman", phone: "0787575821", type: "punct" },
+    { name: "Lidl", phone: "0783074998", type: "punct" },
+    { name: "Matei 1", phone: "0786157929", type: "punct" },
+    { name: "Matei Mese", phone: "0746232090", type: "punct" },
+    { name: "Bancă CEC", phone: "", type: "banca" },
+    { name: "Bancă EXIM", phone: "", type: "banca" },
+    { name: "Alertă Curs", phone: "", type: "alerta" }
+  ];
+
+  const valute = ["RON", "EUR", "USD", "GBP", "CHF", "CAD", "AUD", "HUF", "BGN", "TRY"];
+  const timpuri = ["5 min", "10 min", "15 min", "20 min", "30 min", "Imediat"];
+
+  // GENERATOR INTERFAȚĂ COMANDE PUNCTE (STRÂNSĂ, PENTRU O MÂNĂ)
+  let htmlPuncte = "";
+  puncteLucru.forEach((pt, index) => {
+    const id = index + 1;
+    
+    // Generăm opțiunile pentru destinație (excluzând punctul curent)
+    let destOptions = `<option value="">➡️ Destinatar...</option>`;
+    puncteLucru.forEach(d => {
+      if(d.name !== pt.name) destOptions += `<option value="${d.name}">${d.name}</option>`;
+    });
+
+    // Generăm opțiunile de valute
+    let currOptions = valute.map(v => `<option value="${v}">${v}</option>`).join('');
+
+    // Buton Telefon (dezactivat dacă nu există număr)
+    const callButton = pt.phone 
+      ? `<a href="tel:${pt.phone}" class="wa-btn-call">📞</a>` 
+      : `<button class="wa-btn-call" style="background:#94a3b8; cursor:not-allowed;" disabled>✖️</button>`;
+
+    htmlPuncte += `
+    <div class="wa-item">
+      <!-- Rândul 1: Nume, Apel, Sumă, Valută -->
+      <div class="wa-row-main">
+        <div class="wa-name-box">${pt.name}</div>
+        ${callButton}
+        <input type="number" class="wa-inp-amount" id="amt_${id}" placeholder="Sumă">
+        <select class="wa-sel sel-curr" id="curr_${id}">${currOptions}</select>
+      </div>
+      
+      <!-- Rândul 2: Tip acțiune (Remitere / Pregătește Tot) și Destinație -->
+      <div class="wa-row-selectors">
+        <select class="wa-sel sel-action" id="act_${id}" onchange="toggleActionFields(${id})">
+          <option value="remite">🚚 Remite în...</option>
+          <option value="pregateste_tot">💰 Pregătește TOT / Toate</option>
+          <option value="alerta">🚨 Alertă Curs Nou</option>
+        </select>
+        <select class="wa-sel sel-dest" id="dest_${id}">${destOptions}</select>
+      </div>
+
+      <!-- Rândul 3: Timp și Expediere Rapidă WhatsApp -->
+      <div class="wa-row-action">
+        <select class="wa-sel-time" id="time_${id}">
+          <option value="">⏱️ Timp sosire...</option>
+          ${timpuri.map(t => `<option value="${t}">${t}</option>`).join('')}
+        </select>
+        <button class="wa-btn-send" onclick="sendPunctMsg(${id}, '${pt.name}', '${pt.phone}')">💬 Trimite</button>
+      </div>
+    </div>`;
+  });
+  
+  document.getElementById("wa-points-container").innerHTML = htmlPuncte;
+
+  // Ascundere/Afișare inteligentă câmpuri în funcție de ce selectezi (ajută la operarea cu o mână)
+  window.toggleActionFields = function(id) {
+    const act = document.getElementById("act_" + id).value;
+    const dest = document.getElementById("dest_" + id);
+    const time = document.getElementById("time_" + id);
+    
+    if(act === "pregateste_tot" || act === "alerta") {
+      dest.style.visibility = "hidden"; // Nu avem nevoie de destinație când pregătim stocul sau dăm alertă
+    } else {
+      dest.style.visibility = "visible";
+    }
+  }
+
+  // LOGICA CONSTRUIRE ȘI TRIMITERE MESAJ INTELIGENT
+  window.sendPunctMsg = function(id, nameOrigine, phoneOrigine) {
+    const suma = document.getElementById("amt_" + id).value.trim();
+    const valuta = document.getElementById("curr_" + id).value;
+    const actiune = document.getElementById("act_" + id).value;
+    const destinatie = document.getElementById("dest_" + id).value;
+    const timp = document.getElementById("time_" + id).value;
+
+    let mesajulMeu = "";
+    
+    if (actiune === "remite") {
+      if(!destinatie) { alert("Selectați punctul destinatar (b)!"); return; }
+      const txtSuma = suma ? `${suma} ${valuta}` : "o sumă";
+      mesajulMeu = `Salut! Remite din ${nameOrigine} în ${destinatie} valoarea de: *${txtSuma}*.`;
+    } 
+    else if (actiune === "pregateste_tot") {
+      mesajulMeu = `Salut! Pregătește tot / toate stocurile de *${valuta}* la punctul ${nameOrigine}.`;
+      if(suma) mesajulMeu += ` (Țintă estimată: ${suma} ${valuta}).`;
+    } 
+    else if (actiune === "alerta") {
+      const txtSuma = suma ? `la nivelul de ${suma}` : "";
+      mesajulMeu = `🚨 *ALERTĂ CURS* la ${nameOrigine}! S-a modificat cotația pentru *${valuta}* ${txtSuma}. Verificați sistemul!`;
+    }
+
+    if(timp) {
+      mesajulMeu += ` Timp estimat: _${timp}_.`;
+    }
+
+    // Trimitem direct pe numărul punctului de lucru (sau deschide WhatsApp select pentru bănci/alerte generale)
+    let targetPhone = phoneOrigine ? phoneOrigine : "";
+    if (targetPhone.startsWith('0')) targetPhone = '4' + targetPhone;
+
+    const url = "https://api.whatsapp.com/send?phone=" + encodeURIComponent(targetPhone) + "&text=" + encodeURIComponent(mesajulMeu);
+    window.open(url, '_blank');
+  };
+
+  // Navigare Tab-uri standard
+  function switchTab(id, el) {
+    document.querySelectorAll(".section-container").forEach(s => s.style.display = "none");
+    document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById(id).style.display = "block";
+    el.classList.add("active");
+  }
+
+  function calcCompact() {
+    const r = parseFloat(document.getElementById("rate_eur").value)||0;
+    const a = parseFloat(document.getElementById("amt_eur").value)||0;
+    document.getElementById("res_compact").innerText = (r*a).toFixed(2) + " lei";
+  }
+
+  setInterval(() => { document.getElementById("liveClock").innerText = new Date().toLocaleTimeString("ro-RO"); }, 1000);
+</script>
+</body>
+</html>
